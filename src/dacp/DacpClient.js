@@ -6,9 +6,10 @@ const daap = require('../daap/Decoder');
 
 class DacpClient extends EventEmitter {
 
-  constructor() {
+  constructor(log) {
     super();
 
+    this.log = log;
     this._readyState = 'disconnected';
     this._revisionNumber = 1;
   }
@@ -33,6 +34,8 @@ class DacpClient extends EventEmitter {
     return this._sendRequest('login', { 'pairing-guid': '0x' + options.pairing }).then(response => {
       if (response.mlog && response.mlog.mlid) {
         this._sessionId = response.mlog.mlid;
+        this.log(`Session ID ${this._sessionId}`);
+
         this._setReadyState('connected');
         this._revisionNumber = 1;
       }
@@ -85,6 +88,16 @@ class DacpClient extends EventEmitter {
         resolve(response);
       });
     });
+  }
+
+  async getProperty(prop) {
+    return this._sendRequest('ctrl-int/1/getproperty', { 'properties': prop });
+  }
+
+  async setProperty(prop, value) {
+    const data = {};
+    data[prop] = value;
+    return this._sendRequest('ctrl-int/1/setproperty', data);
   }
 
   async sendRequest() {
