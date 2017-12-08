@@ -35,7 +35,7 @@ class DacpAccessory {
     this.serviceName = config.serviceName;
     this.version = config.version;
 
-    this._dacpClient = new DacpClient();
+    this._dacpClient = new DacpClient(log);
     this._dacpClient.on('readyStateChanged', () => this.log(this._dacpClient.readyState))
 
     this._services = this.createServices();
@@ -89,7 +89,7 @@ class DacpAccessory {
   serviceUp(service) {
     this._dacpClient.login({ host: `${service.host}:${service.port}`, pairing: this.pairing })
       .then(() => this._dacpClient.getServerInfo())
-      .then(serverInfo => console.log(`Server Info: ${JSON.stringify(serverInfo)}`))
+      .then(serverInfo => this.log(`Connected to ${serverInfo.msrv.minm}`))
       .then(() => this._startRetrievingUpdates())
       .catch(error => this.log(`[${this.name}] Connection to DACP server failed.`));
   }
@@ -101,7 +101,9 @@ class DacpAccessory {
   _startRetrievingUpdates() {
     this._dacpClient.getUpdate()
       .then(response => {
-        this.log(JSON.stringify(response));
+        // TODO: Update Now playing service
+        // TODO: Update player service
+        //this.log(response);
       })
       .then(() => this._refreshSpeakerCharacteristics())
       .then(() => this._startRetrievingUpdates())
@@ -129,6 +131,11 @@ class DacpAccessory {
       .updateValue(volume, undefined, undefined);
     this._speakerService.getCharacteristic(Characteristic.Mute)
       .updateValue(volume === 0, undefined, undefined);
+
+    this._volume = volume;
+    if (volume != 0 && this._hasMuted) {
+      this._unmutedViaDevice();
+    }
   }
 
   _getVolume(callback) {
@@ -136,6 +143,7 @@ class DacpAccessory {
       .then(response => {
         this.log("Returning current volume: v=" + response.cmgt.cmvo);
         callback(undefined, response.cmgt.cmvo);
+        this._volume = response.cmgt.cmvo;
       })
       .catch(error => {
         callback(error, undefined);
@@ -168,13 +176,34 @@ class DacpAccessory {
 
   _setMute(muted, callback) {
     this.log(`Setting current mute state to ${muted ? "muted" : "unmuted"}`);
-    this._dacpClient.setProperty('dmcp.volume', 0)
-      .then(() => {
-        callback();
-      })
-      .catch(error => {
-        callback(error);
-      });
+
+    if (muted) {
+      this._mute(callback);
+    }
+    else {
+      this._unmuteViaHomeKit(callback);
+    }
+  }
+
+  _mute(callback) {
+    this._hasMuted = true;
+    this._restoreVolume = this._volume;
+
+    this._setVolume(0, callback);
+  }
+
+  _unmuteViaHomeKit(callback) {
+    // Unmuted via HomeKit, muted via HomeKit
+    const volume = this._restoreVolume || 25;
+    this._setVolume(volume, callback);
+    this._hasMuted = false;
+    this._restoreVolume = undefined;
+  }
+
+  _unmutedViaDevice() {
+    // Unmuted via device, muted via HomeKit
+    this._hasMuted = false;
+    this._restoreVolume = undefined;
   }
 }
 
