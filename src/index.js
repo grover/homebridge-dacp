@@ -45,9 +45,6 @@ const DacpPlatform = class {
   _didFinishLaunching() {
     // Start looking for the controllable accessories
     this._dacpBrowser.start();
-
-    // Start announcing the remote
-    this._remotes.forEach(remote => remote.start());
   }
 
   _onServiceUp(service) {
@@ -56,7 +53,7 @@ const DacpPlatform = class {
 
     // Update accessory and tell it that it's device is available.
     this._accessories.forEach(accessory => {
-      if (service.name === accessory.serviceName) {
+      if (accessory.serviceName && service.name === accessory.serviceName) {
         accessory.serviceUp(service);
       }
     });
@@ -107,25 +104,28 @@ const DacpPlatform = class {
   }
 
   accessories(callback) {
-    const { remotes } = this.config;
+    const { devices } = this.config;
 
-    remotes.forEach(remote => {
+    devices.forEach(device => {
 
-      this._createRemote(remote);
+      this.log(`Found device in config: "${device.name}"`);
 
-      remote.devices.forEach(device => {
-        this.log(`Found device in config: "${device.name}"`);
+      if (!device.pairing || !device.serviceName) {
+        this.log('');
+        this.log(`Beginning "${device.name}" remote control announcements for the device.`);
+        this.log('');
+        this.log('Skipping creation of the accessory because it doesn\'t have a pairing code or service name yet.');
+        this.log('You need to pair the device/iTunes, reconfigure and restart homebridge.');
+        this.log('');
 
-        if (!device.pairing || !device.serviceName) {
-          this.log('Skipping device because it doesn\'t have a pairing code or service name.');
-          return;
-        }
+        this._createRemote(device);
+        return;
+      }
 
-        device.version = version;
+      device.version = version;
 
-        const accessory = new DacpAccessory(this.api.hap, this.log, device);
-        this._accessories.push(accessory);
-      });
+      const accessory = new DacpAccessory(this.api.hap, this.log, device);
+      this._accessories.push(accessory);
     });
 
     callback(this._accessories);

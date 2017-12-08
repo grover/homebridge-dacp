@@ -32,24 +32,16 @@ After [Homebridge](https://github.com/nfarina/homebridge) has been installed:
   "platforms": [
     {
       "platform": "DACP",
-      "remotes": [
+      "devices": [
         {
-          "name": "Name of the remote control",
-          "devices": [
-            {
-              "name": "Apple TV (Living room)",
-              "pairing": "...pairing code...",
-              "serviceName": "...service name...",
-              "features": {
-                "no-volume-control": true
-              }
-            },
-            {
-              "name": "iTunes on iMac",
-              "pairing": "...pairing code...",
-              "serviceName": "...service name..."
-            }
-          ]
+          "name": "Apple TV (Living room)",
+          "pairing": "...pairing code...",
+          "serviceName": "...service name...",
+        },
+        {
+          "name": "iTunes on iMac",
+          "pairing": "...pairing code...",
+          "serviceName": "...service name..."
         }
       ]
     }
@@ -62,19 +54,12 @@ The platform can connect to any number of devices or programs at the same time a
 You may choose to create all accessories with one remote or create multiple remotes and group your
 accessories in a way that suits you best.
 
-The plugin is configured by specifying the following:
+The plugin is configured with the following configuration:
 
 | Attributes | Usage |
 |------------|-------|
-| name | The name of the remote control simulated by this plugin. The name of the remote control will be visible to iTunes and Apple TV and will show up in their UI for [pairing](#pairing). |
-
-Each device paired with the remote control needs its own entry in the 
-configuration:
-
-| Attributes | Usage |
-|------------|-------|
-| name | The name of the accessory to create for this device. |
-| pair | The pair code for the device, which is created during the pairing process. |
+| name | The name of the accessory and remote control to create for this device. |
+| pairing | The pairing code for the device, which is created during the pairing process. |
 | serviceName | The service name obtained during the pairing process. |
 | features | An object that enables you to restrict the services created for this accessory. |
 | no-volume-control | Disables the Speaker service for Apple TVs, which perform volume control through external devices like a TV or A/V receiver. |
