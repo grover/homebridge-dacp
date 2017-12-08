@@ -34,6 +34,9 @@ const DacpPlatform = class {
     this._dacpBrowser.on('serviceDown', this._onServiceDown.bind(this));
     this._dacpBrowser.on('error', this._onDacpBrowserError.bind(this));
 
+    this._dacpErrors = 0;
+
+    this._accessories = [];
     this._remotes = [];
 
     this.api.on('didFinishLaunching', this._didFinishLaunching.bind(this));
@@ -48,18 +51,30 @@ const DacpPlatform = class {
   }
 
   _onServiceUp(service) {
-    // TODO: Update accessory that has service.name == accessory.config.serviceName
-    // and tell it that it's device is available.
+    // If the browser was down this is also an indication that it's up again.
+    this._dacpErrors = 0;
+
+    // Update accessory and tell it that it's device is available.
+    this._accessories.forEach(accessory => {
+      if (service.name === accessory.serviceName) {
+        accessory.serviceUp(service);
+      }
+    });
   }
 
   _onServiceDown(service) {
-    // TODO: Update accessory that has service.name == accessory.config.serviceName
-    // and tell it that it's device is unavailable.
+    // Update accessory and tell it that it's device is unavailable.
+    this._accessories.forEach(accessory => {
+      if (accessory.serviceName && service.name === accessory.serviceName) {
+        accessory.serviceDown(service);
+      }
+    });
   }
 
   _onDacpBrowserError(error) {
 
-    // TODO: How often has this occurred? If less than 5 times within last 30mins,
+
+    // How often has this occurred? If less than 5 times within last 10mins,
     // keep retrying. We might have a sporadic network disconnect or other reason
     // that this has been failing. We want to deal with this gracefully, so we 
     // need a restart strategy for the DACP browser and the accessories.
@@ -68,18 +83,30 @@ const DacpPlatform = class {
     this.log('');
     this.log(`  Error: ${JSON.stringify(error)}`);
     this.log('');
-    this.log('Restarting homebridge might fix the problem. If not, file an issue at https://github.com/grover/homebridge-dacp.');
+
+    this._dacpErrors++;
+    this._dacpBrowser.stop();
+
+    if (this._dacpErrors < 5) {
+      const timeout = 120000;
+      this.log(`Restarting MDNS browser for DACP in ${timeout / 1000} seconds.`);
+      setTimeout(() => this._dacpBrowser.start(), timeout);
+    }
+    else {
+      this.log('There were 5 failures in the past 600s. Giving up.');
+      this.log('');
+      this.log('Restarting homebridge might fix the problem. If not, file an issue at https://github.com/grover/homebridge-dacp.');
+    }
+
     this.log('');
 
-    // TODO: Condition and duration
-    this.log(`Restarting MDNS browser for DACP in ${120} seconds.`);
-
-    // TODO: Mark all accessories as unavailable.
+    // Mark all accessories as unavailable
+    this._accessories.forEach(accessory => {
+      accessory.serviceDown();
+    });
   }
 
   accessories(callback) {
-    let _accessories = [];
-
     const { remotes } = this.config;
 
     remotes.forEach(remote => {
@@ -97,11 +124,11 @@ const DacpPlatform = class {
         device.version = version;
 
         const accessory = new DacpAccessory(this.api.hap, this.log, device);
-        _accessories.push(accessory);
+        this._accessories.push(accessory);
       });
     });
 
-    callback(_accessories);
+    callback(this._accessories);
   }
 
   _createRemote(remote) {
