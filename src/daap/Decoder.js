@@ -29,6 +29,10 @@ const daap = {
     "name": "daap.databasesongs",
     "type": "list"
   },
+  "aelb": {
+    "name": "unknown",
+    "type": "byte"
+  },
   "aeCR": {
     "name": "com.apple.itunes.content-rating",
     "type": "string"
@@ -126,6 +130,10 @@ const daap = {
     "name": "com.apple.itunes.extended-media-kind",
     "type": "byte"
   },
+  "aeMQ": {
+    "name": "aeMQ",
+    "type": "byte"
+  },
   "aeND": {
     "name": "com.apple.itunes.non-drm-user-id",
     "type": "long"
@@ -156,12 +164,20 @@ const daap = {
     "name": "com.apple.itunes.saved-genius",
     "type": "byte"
   },
+  "aeSL": {
+    "name": "unknown",
+    "type": "byte"
+  },
   "aeSN": {
     "name": "com.apple.itunes.series-name",
     "type": "string"
   },
   "aeSP": {
     "name": "com.apple.itunes.smart-playlist",
+    "type": "byte"
+  },
+  "aeSR": {
+    "name": "unknown",
     "type": "byte"
   },
   "aeSU": {
@@ -175,6 +191,10 @@ const daap = {
   "aeSX": {
     "name": "unknown tag",
     "type": "long"
+  },
+  "aeTr": {
+    "name": "unknown tag",
+    "type": "byte"
   },
   "aeXD": {
     "name": "com.apple.itunes.xid",
@@ -483,6 +503,22 @@ const daap = {
     "name": "dacp.unknown",
     "type": "byte"
   },
+  "cana": {
+    "name": "dacp.nowplayingartist",
+    "type": "string"
+  },
+  "cang": {
+    "name": "dacp.nowplayinggenre",
+    "type": "string"
+  },
+  "canl": {
+    "name": "dacp.nowplayingalbum",
+    "type": "string"
+  },
+  "canp": {
+    "name": "dacp.nowplayingids",
+    "type": "string"
+  },
   "caps": {
     "name": "dacp.playerstate",
     "type": "byte"
@@ -521,6 +557,10 @@ const daap = {
     "name": "daap.nowplayingtrack",
     "type": "string"
   },
+  "casa": {
+    "name": "unknown tag",
+    "type": "int"
+  },
   "cavc": {
     "type": "byte"
   },
@@ -532,9 +572,21 @@ const daap = {
     "name": "dacp.visualizer",
     "type": "byte"
   },
+  "ceGS": {
+    "name": "com.apple.itunes.genius-selectable",
+    "type": "byte"
+  },
+  "ceQu": {
+    "name": "ceQu",
+    "type": "byte"
+  },
   "cmgt": {
     "name": "dmcp.getpropertyresponse",
     "type": "list"
+  },
+  "cmmk": {
+    "name": "dmcp.mediakind",
+    "type": "int"
   },
   "cmsr": {
     "name": "daap.revisionnumber",
@@ -669,18 +721,21 @@ const daap = {
     "name": "dmap.supportsuatologout",
     "type": "byte"
   },
-  "msau": {
-    "name": "dmap.authenticationmethod",
+  "msas": {
+    "name": "dmap.authenticationschemes",
     "type": "byte"
   },
-  "msaud": {
-    "description": "(should be self explanatory)",
+  "msau": {
     "name": "dmap.authenticationmethod",
     "type": "byte"
   },
   "msbr": {
     "name": "dmap.supportsbrowse",
     "type": "byte"
+  },
+  "mscu": {
+    "name": "mscu",
+    "type": "long"
   },
   "msdc": {
     "name": "dmap.databasescount",
@@ -702,6 +757,14 @@ const daap = {
     "name": "dmap.loginrequired",
     "type": "byte"
   },
+  "msma": {
+    "name": "dmap.machineaddress",
+    "type": "long"
+  },
+  "msml": {
+    "name": "dmap.speakermachinelist",
+    "type": "list"
+  },
   "mspi": {
     "name": "dmap.supportspersistentids",
     "type": "byte"
@@ -719,8 +782,16 @@ const daap = {
     "name": "dmap.serverinforesponse",
     "type": "list"
   },
+  "mstc": {
+    "name": "dmap.utctime",
+    "type": "int"
+  },
   "mstm": {
     "name": "dmap.timeoutinterval",
+    "type": "int"
+  },
+  "msto": {
+    "name": "dmap.utcoffset",
     "type": "int"
   },
   "msts": {
@@ -762,6 +833,10 @@ const daap = {
   "muty": {
     "name": "dmap.updatetype",
     "type": "byte"
+  },
+  "ppro": {
+    "name": "dpap.protocolversion",
+    "type": "version"
   },
   "prsv": {
     "name": "daap.resolve",
