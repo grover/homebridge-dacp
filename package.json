@@ -1,0 +1,26 @@
+{
+  "name": "homebridge-dacp",
+  "version": "0.0.1",
+  "description": "A homebridge plugin to control iTunes, AirPlay speakers and Apple TV devices",
+  "main": "src/index.js",
+  "scripts": {},
+  "author": "Michael Fröhlich",
+  "license": "ISC",
+  "dependencies": {
+    "mdns": "^2.3.4"
+  },
+  "keywords": [
+    "homebridge",
+    "homebridge-plugin",
+    "appletv",
+    "itunes",
+    "airplay",
+    "dacp",
+    "homekit",
+    "home-automation"
+  ],
+  "engines": {
+    "node": ">=0.12.0",
+    "homebridge": ">=0.2.0"
+  }
+}

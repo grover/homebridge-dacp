@@ -1,0 +1,134 @@
+# Homebridge DACP Plugin
+
+This plugin enables Homebridge to control devices or programs, which implement the [DACP](https://en.wikipedia.org/wiki/Digital_Audio_Control_Protocol). Examples of programs or
+devices that can be controlled by this plugin are Apple TV and iTunes.
+
+This plugin runs on any system capable of running [Homebridge](https://github.com/nfarina/homebridge)
+and only needs network access to the device or program in question. There is no need to
+run this on the same machine as iTunes.
+
+This plugin provides volume control and play/pause controls via HomeKit. These can be
+used in conjunction with the [homebridge-callmonitor plugin](https://github.com/grover/homebridge-callmonitor)
+to pause media playback or to reduce the playback volume for incoming calls.
+
+## Installation instructions
+
+After [Homebridge](https://github.com/nfarina/homebridge) has been installed:
+
+ ```sudo npm install -g homebridge-dacp```
+
+## Example config.json
+
+```json
+{
+  "bridge": {
+      ...
+  },
+  "platforms": [
+    {
+      "platform": "DACP",
+      "name": "Name of the remote control",
+      "devices": [
+        {
+          "name": "Apple TV (Living room)",
+          "pairing": "...pairing code...",
+          "serviceName": "...service name..."
+        },
+        {
+          "name": "iTunes on iMac",
+          "pairing": "...pairing code...",
+          "serviceName": "...service name..."
+        }
+      ]
+    }
+  ]
+}
+```
+
+The platform can connect to any number of devices or programs at the same time as long as they support the DACP protocol. I've tested the plugin with an Apple TV 4 and iTunes 12.7.
+
+The plugin is configured by specifying the following:
+
+| Attributes | Usage |
+|------------|-------|
+| name | The name of the remote control simulated by this plugin. The name of the remote control will be visible to iTunes and Apple TV and will show up in their UI for [pairing](#pairing). |
+
+Each device paired with the remote control needs its own entry in the 
+configuration:
+
+| Attributes | Usage |
+|------------|-------|
+| name | The name of the accessory to create for this device. |
+| pair | The pair code for the device, which is created during the pairing process. |
+| serviceName | The service name obtained during the pairing process. |
+
+## Accessory Services
+
+Each device will expose multiple services:
+
+* Accessory Information Service
+* Speaker Service
+* [Player Service](src/HomeKitTypes.js)
+
+## Supported clients
+
+This platform and the devices it controls have been verified to work with the following apps on iOS 11
+
+* Elgato Eve
+* Home
+
+## Supported devices and programs
+
+* Apple TV 4
+* Apple iTunes 12.7
+
+Other devices not listed here may work. If you have another device that works, please report
+it via a [GitHub](https://github.com/grover/homebridge-dacp/issues) issue.
+
+### Pairing
+
+The remote control created by this plugin needs to be paired to the devices you want to use. The pairing process varies by device or program
+and the following screenshots illustrate the pairing process.
+
+#### Pairing Apple TV to this remote control
+
+_TODO_
+
+#### Pairing Apple iTunes to this remote control
+
+_TODO_
+
+## Some asks for friendly gestures
+
+If you use this and like it - please leave a note by staring this package here or on GitHub.
+
+If you use it and have a problem, file an issue at [GitHub](https://github.com/grover/homebridge-dacp/issues) - I'll try to help.
+
+If you tried this, but don't like it: tell me about it in an issue too. I'll try my best
+to address these in my spare time.
+
+If you fork this, go ahead - I'll accept pull requests for enhancements.
+
+## License
+
+MIT License
+
+Copyright (c) 2017 Michael Fröhlich
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
