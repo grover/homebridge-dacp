@@ -146,8 +146,8 @@ const DacpPlatform = class {
       this.log(``);
       this.log(`{`);
       this.log(`  "name": "... name of the accessory ...",`);
-      this.log(`  "pair": "${remoteConfig.pair}",`);
-      this.log(`  "serviceName": "${data.serviceName}",`);
+      this.log(`  "pairing": "${remoteConfig.pair}",`);
+      this.log(`  "serviceName": "${data.serviceName}"`);
       this.log(`}`);
       this.log(``);
       this.log(`Please add the above block to the remote in your homebridge config.json`);
