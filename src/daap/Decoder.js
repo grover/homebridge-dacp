@@ -532,8 +532,16 @@ const daap = {
     "name": "dacp.visualizer",
     "type": "byte"
   },
+  "cmgt": {
+    "name": "dmcp.getpropertyresponse",
+    "type": "list"
+  },
   "cmsr": {
     "name": "daap.revisionnumber",
+    "type": "int"
+  },
+  "cmvo": {
+    "name": "dmcp.volume",
     "type": "int"
   },
   "mbcl": {
