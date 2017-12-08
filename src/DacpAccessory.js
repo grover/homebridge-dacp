@@ -34,6 +34,7 @@ class DacpAccessory {
     this.pairing = config.pairing;
     this.serviceName = config.serviceName;
     this.version = config.version;
+    this.features = config.features || {};
 
     this._dacpClient = new DacpClient(log);
     this._dacpClient.on('readyStateChanged', () => this.log(this._dacpClient.readyState))
@@ -65,6 +66,9 @@ class DacpAccessory {
 
   getSpeakerService() {
     this._speakerService = new Service.Speaker(this.name);
+    if (this.features && this.features['volume-control'] === false) {
+      return;
+    }
 
     this._speakerService.getCharacteristic(Characteristic.Volume)
       .on('get', this._getVolume.bind(this))
