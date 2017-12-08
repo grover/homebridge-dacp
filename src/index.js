@@ -28,24 +28,54 @@ const DacpPlatform = class {
     this.log('DACP Platform Plugin Loaded');
     this.config = config;
     this.api = api;
+
+    this._dacpBrowser = new DacpBrowser(this.log);
+    this._dacpBrowser.on('serviceUp', this._onServiceUp.bind(this));
+    this._dacpBrowser.on('serviceDown', this._onServiceDown.bind(this));
+    this._dacpBrowser.on('error', this._onDacpBrowserError.bind(this));
+
     this._remotes = [];
 
     this.api.on('didFinishLaunching', this._didFinishLaunching.bind(this));
   }
 
   _didFinishLaunching() {
-    this._dacpBrowser = new DacpBrowser(this.log);
+    // Start looking for the controllable accessories
     this._dacpBrowser.start();
 
+    // Start announcing the remote
     this._remotes.forEach(remote => remote.start());
   }
 
-  _randomBaseString(length, base) {
-    var generated = "";
-    for (var ctr = 0; ctr < length; ctr++)
-      generated += Math.floor(Math.random() * base).toString(base);
-    return generated;
-  };
+  _onServiceUp(service) {
+    // TODO: Update accessory that has service.name == accessory.config.serviceName
+    // and tell it that it's device is available.
+  }
+
+  _onServiceDown(service) {
+    // TODO: Update accessory that has service.name == accessory.config.serviceName
+    // and tell it that it's device is unavailable.
+  }
+
+  _onDacpBrowserError(error) {
+
+    // TODO: How often has this occurred? If less than 5 times within last 30mins,
+    // keep retrying. We might have a sporadic network disconnect or other reason
+    // that this has been failing. We want to deal with this gracefully, so we 
+    // need a restart strategy for the DACP browser and the accessories.
+
+    this.log('Fatal error browsing for DACP services:');
+    this.log('');
+    this.log(`  Error: ${JSON.stringify(error)}`);
+    this.log('');
+    this.log('Restarting homebridge might fix the problem. If not, file an issue at https://github.com/grover/homebridge-dacp.');
+    this.log('');
+
+    // TODO: Condition and duration
+    this.log(`Restarting MDNS browser for DACP in ${120} seconds.`);
+
+    // TODO: Mark all accessories as unavailable.
+  }
 
   accessories(callback) {
     let _accessories = [];
@@ -99,4 +129,11 @@ const DacpPlatform = class {
 
     this._remotes.push(dacpRemote);
   }
+
+  _randomBaseString(length, base) {
+    var generated = "";
+    for (var ctr = 0; ctr < length; ctr++)
+      generated += Math.floor(Math.random() * base).toString(base);
+    return generated;
+  };
 }

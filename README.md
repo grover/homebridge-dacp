@@ -9,7 +9,7 @@ run this on the same machine as iTunes.
 
 This plugin provides volume control and play/pause controls via HomeKit. These can be
 used in conjunction with the [homebridge-callmonitor plugin](https://github.com/grover/homebridge-callmonitor)
-to pause media playback or to reduce the playback volume for incoming calls.
+to pause media playback or to reduce the playback volume while on a phone call.
 
 ## Installation instructions
 
@@ -27,17 +27,24 @@ After [Homebridge](https://github.com/nfarina/homebridge) has been installed:
   "platforms": [
     {
       "platform": "DACP",
-      "name": "Name of the remote control",
-      "devices": [
+      "remotes": [
         {
-          "name": "Apple TV (Living room)",
-          "pairing": "...pairing code...",
-          "serviceName": "...service name..."
-        },
-        {
-          "name": "iTunes on iMac",
-          "pairing": "...pairing code...",
-          "serviceName": "...service name..."
+          "name": "Name of the remote control",
+          "devices": [
+            {
+              "name": "Apple TV (Living room)",
+              "pairing": "...pairing code...",
+              "serviceName": "...service name...",
+              "features": {
+                "no-volume-control": true
+              }
+            },
+            {
+              "name": "iTunes on iMac",
+              "pairing": "...pairing code...",
+              "serviceName": "...service name..."
+            }
+          ]
         }
       ]
     }
@@ -46,6 +53,9 @@ After [Homebridge](https://github.com/nfarina/homebridge) has been installed:
 ```
 
 The platform can connect to any number of devices or programs at the same time as long as they support the DACP protocol. I've tested the plugin with an Apple TV 4 and iTunes 12.7.
+
+You may choose to create all accessories with one remote or create multiple remotes and group your
+accessories in a way that suits you best.
 
 The plugin is configured by specifying the following:
 
@@ -61,6 +71,8 @@ configuration:
 | name | The name of the accessory to create for this device. |
 | pair | The pair code for the device, which is created during the pairing process. |
 | serviceName | The service name obtained during the pairing process. |
+| features | An object that enables you to restrict the services created for this accessory. |
+| no-volume-control | Disables the Speaker service for Apple TVs, which perform volume control through external devices like a TV or A/V receiver. |
 
 ## Accessory Services
 
@@ -90,11 +102,11 @@ it via a [GitHub](https://github.com/grover/homebridge-dacp/issues) issue.
 The remote control created by this plugin needs to be paired to the devices you want to use. The pairing process varies by device or program
 and the following screenshots illustrate the pairing process.
 
-#### Pairing Apple TV to this remote control
+#### Pairing Apple TV to a homebridge-dacp remote control
 
 _TODO_
 
-#### Pairing Apple iTunes to this remote control
+#### Pairing Apple iTunes to a homebridge-dacp remote control
 
 _TODO_
 

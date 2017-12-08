@@ -9,13 +9,16 @@ class DacpBrowser extends EventEmitter {
     super();
 
     this.log = log;
+  }
+
+  start() {
+    this.log('Starting DACP browser...');
 
     this._browser = mdns.createBrowser(
       mdns.tcp(this._serviceName),
       { resolverSequence: this._resolverSequence });
 
     this._browser.on('serviceUp', service => {
-      this.log('Discovered ' + JSON.stringify(service));
       this.emit('serviceUp', service);
     });
 
@@ -25,16 +28,18 @@ class DacpBrowser extends EventEmitter {
 
     this._browser.on('error', error => {
       this.emit('error', error);
-    });
-  }
 
-  start() {
-    this.log('Starting DACP browser...');
+      this.stop();
+    });
+
     this._browser.start();
   }
 
   stop() {
-    this._browser.stop();
+    if (this._browser) {
+      this._browser.stop();
+      this._browser = undefined;
+    }
   }
 };
 
