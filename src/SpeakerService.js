@@ -39,7 +39,7 @@ class SpeakerService {
   }
 
   update() {
-    this._dacp.getProperty('dmcp.volume')
+    return this._dacp.getProperty('dmcp.volume')
       .then(response => {
         if (response.cmgt && response.cmgt.cmvo !== undefined) {
           this._updateSpeakerCharacteristics(response.cmgt.cmvo);

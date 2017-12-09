@@ -29,6 +29,20 @@ class NowPlayingService {
     return svc;
   }
 
+  accessoryDown() {
+    const emptyState = {
+      track: '',
+      album: '',
+      artist: '',
+      genre: '',
+      type: -1,
+      position: 0,
+      duration: 0,
+      playerState: 0
+    };
+    updateNowPlaying(emptyState);
+  }
+
   updateNowPlaying(state) {
     this._service.getCharacteristic(Characteristic.Title)
       .updateValue(state.track);
@@ -38,6 +52,12 @@ class NowPlayingService {
 
     this._service.getCharacteristic(Characteristic.Artist)
       .updateValue(state.artist);
+
+    this._service.getCharacteristic(Characteristic.Genre)
+      .updateValue(state.genre);
+
+    this._service.getCharacteristic(Characteristic.MediaType)
+      .updateValue(state.mediaType);
 
     this._setTime(Characteristic.MediaCurrentPosition, state.position / 1000);
     this._setTime(Characteristic.MediaItemDuration, state.duration / 1000);

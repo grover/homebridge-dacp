@@ -10,97 +10,90 @@ class DacpClient extends EventEmitter {
     super();
 
     this.log = log;
-    this._readyState = 'disconnected';
-    this._revisionNumber = 1;
-  }
 
-  /**
-   * 'disconnected': Disconnected
-   * 'authenticating': Connecting to the DACP server
-   * 'connected': Connected to the DACP server
-   */
-  get readyState() {
-    return this._readyState;
+    /**
+     * 'disconnected': Disconnected
+     * 'authenticating': Connecting to the DACP server
+     * 'connected': Connected to the DACP server
+     */
+    this._state = 'disconnected';
   }
 
   async login(options) {
-    if (this._readyState != 'disconnected') {
+    if (this._state !== 'disconnected') {
       throw new Error('Can\'t login on an already active client.');
     }
 
-    this._setReadyState('authenticating');
+    this._setReadyState('authenticating', options);
     this._host = options.host;
 
-    return this.sendRequest('login', { 'pairing-guid': '0x' + options.pairing }).then(response => {
-      if (response.mlog && response.mlog.mlid) {
-        this._sessionId = response.mlog.mlid;
-        this.log(`Session ID ${this._sessionId}`);
+    return this.sendRequest('login', { 'pairing-guid': '0x' + options.pairing })
+      .then(response => {
+        if (response.mlog && response.mlog.mlid) {
+          this._sessionId = response.mlog.mlid;
 
-        this._setReadyState('connected');
-        this._revisionNumber = 1;
-      }
-      else {
-        this.emit('error', 'MLID is missing.');
-        this._setReadyState('disconnected');
-      }
-    });
-  }
-
-  logout() {
-    if (this._readyState !== 'connected') {
-      this._readyState = 'disconnected';
-      return;
-    }
-
-    this.sendRequest('logout', {})
-      .then(() => {
-        this._sessionId = undefined;
-        this._readyState = 'disconnected';
-      })
-      .catch(() => {
-        this._sessionId = undefined;
-        this._readyState = 'disconnected';
+          this._revisionNumber = 1;
+          this._setReadyState('connected', this._sessionId);
+        }
+        else {
+          this._setReadyState('failed', 'Missing session ID in authentication response.');
+        }
       });
   }
 
-  async getUpdate() {
-    if (this._readyState !== 'connected') {
-      throw new Error('Can\'t send requests to disconnected DACP servers.');
-    }
-
+  async requestPlayStatus() {
     const self = this;
-    return this.sendRequest('ctrl-int/1/playstatusupdate', { 'revision-number': this._revisionNumber }).catch(error => {
-      this._revisionNumber = 1;
-      return self.getUpdate();
+
+    return Promise.resolve().then(() => {
+      this._assertConnected();
+      return this.sendRequest('ctrl-int/1/playstatusupdate', { 'revision-number': this._revisionNumber });
     }).then(response => {
-      if (response.cmst && response.cmst.cmsr) {
-        self._revisionNumber = response.cmst.cmsr;
+      if (!response.hasOwnProperty('cmst') || !response.cmst.hasOwnProperty('cmsr')) {
+        const e = new Error('Missing revision number in play status update response');
+        e.response = response;
+        throw e;
       }
-      else {
-        self._revisionNumber++;
-      }
+
+      this._revisionNumber = response.cmst.cmsr;
       return response;
+    }).catch(e => {
+      this._setReadyState('failed', e);
+      throw e;
     });
   }
 
   async getServerInfo() {
-    return new Promise((resolve, reject) => {
-      return this.sendRequest('server-info').catch(error => {
-        reject(error);
-      }).then(response => {
-        resolve(response);
-      });
+    return Promise.resolve().then(() => {
+      this._assertConnected();
+      return this.sendRequest('server-info');
+    }).catch(e => {
+      this._setReadyState('failed', e);
+      throw e;
     });
+
   }
 
   async getProperty(prop) {
-    return this.sendRequest('ctrl-int/1/getproperty', { 'properties': prop });
+    return Promise.resolve().then(() => {
+      this._assertConnected();
+      return this.sendRequest('ctrl-int/1/getproperty', { 'properties': prop });
+    }).catch(e => {
+      this._setReadyState('failed', e);
+      throw e;
+    });
   }
 
   async setProperty(prop, value) {
-    const data = {};
-    data[prop] = value;
-    return this.sendRequest('ctrl-int/1/setproperty', data);
+    return Promise.resolve().then(() => {
+      this._assertConnected();
+
+      const data = {};
+      data[prop] = value;
+      return this.sendRequest('ctrl-int/1/setproperty', data);
+    }).catch(e => {
+      this._setReadyState('failed', e);
+      throw e;
+    });
   }
 
   async sendRequest(relativeUri, data) {
@@ -123,10 +116,17 @@ class DacpClient extends EventEmitter {
         }
       };
 
-      request(options, function (error, response) {
-        if (error) {
-          this.emit('error', error);
-          reject(error);
+      // this.log(`Request ${JSON.stringify(options)}`);
+      request(options, (error, response) => {
+        // this.log(`Done ${JSON.stringify(options)}`);
+        if (error || (response && response.statusCode >= 300)) {
+          const e = {
+            error: error,
+            response: response,
+            options: options
+          };
+
+          reject(e);
           return;
         }
 
@@ -134,7 +134,7 @@ class DacpClient extends EventEmitter {
           response = daap.decode(response.body);
         }
         catch (e) {
-          this.emit('error', error);
+          this.emit('failed', error);
           reject(e);
           return;
         }
@@ -144,9 +144,26 @@ class DacpClient extends EventEmitter {
     });
   }
 
+  _assertConnected() {
+    if (this._readyState !== 'connected') {
+      throw new Error('Can\'t send requests to disconnected DACP servers.');
+    }
+  }
+
   _setReadyState(readyState) {
+    if (readyState === 'failed') {
+      this._sessionId = undefined;
+      this._revisionNumber = 1;
+    }
+
+    if (readyState === this._readyState) {
+      return;
+    }
+
     this._readyState = readyState;
-    this.emit('readyState', this._readyState);
+
+    const args = Array.from(arguments).slice(1);
+    this.emit(readyState, ...args);
   }
 };
 

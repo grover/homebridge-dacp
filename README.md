@@ -128,12 +128,12 @@ the remote control in the configuration file:
 It is important to leave out the `pairing` and `serviceName` fields of the remote. When you launch `homebridge` with this configuration, a log similar to the following will be displayed:
 
 ```text
-[DACP] Found device in config: "New Remote Control"
+[DACP] Found accessory in config: "New Remote Control"
 [DACP]
-[DACP] Beginning "New Remote Control" remote control announcements for the device.
+[DACP] Skipping creation of the accessory "New Remote Control" because it doesn't have a pairing code or
+[DACP] service name yet. You need to pair the device/iTunes, reconfigure and restart homebridge.
 [DACP]
-[DACP] Skipping creation of the accessory because it doesn't have a pairing code or service name yet.
-[DACP] You need to pair the device/iTunes, reconfigure and restart homebridge.
+[DACP] Beginning remote control announcements for the accessory "New Remote Control".
 [DACP]
 [DACP] 	Use passcode 7118 to pair with this remote control.
 [DACP]
@@ -161,7 +161,7 @@ Apple has provided a [support page](https://support.apple.com/kb/ph19503), which
 After you've paired the product in question to this plugin the following output will be shown:
 
 ```text
-[DACP] Added pairing for "New Remote Control":
+[DACP] Completed pairing for "New Remote Control":
 [DACP] 
 [DACP] {
 [DACP]   "name": "New Remote Control",
@@ -169,9 +169,10 @@ After you've paired the product in question to this plugin the following output 
 [DACP]   "serviceName": "AEA342CEA7A8E7EE"
 [DACP] }
 [DACP] 
-[DACP] Please add the above block to the remote in your homebridge config.json.
+[DACP] Please add the above block to the accessory in your homebridge config.json.
 [DACP]
-[DACP] YOU MUST RESTART HOMEBRIDGE AFTER YOU ADDED THE ABOVE LINES OR THE PLUGIN WILL NOT WORK.
+[DACP] YOU MUST RESTART HOMEBRIDGE AFTER YOU ADDED THE ABOVE LINES OR THE ACCESSORY
+[DACP] WILL NOT WORK.
 [DACP]
 ```
 

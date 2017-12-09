@@ -1,6 +1,8 @@
 "use strict";
 
 const inherits = require('util').inherits;
+const backoff = require('backoff');
+
 const DacpClient = require('./dacp/DacpClient');
 
 const NowPlayingService = require('./NowPlayingService');
@@ -23,11 +25,18 @@ class DacpAccessory {
     this.version = config.version;
     this.features = config.features || {};
 
-    this._dacpClient = new DacpClient(log);
-    this._dacpClient.on('readyStateChanged', () => this.log(this._dacpClient.readyState))
-    this._dacpClient.on('error', e => {
-      this._onDacpFailure(e);
-    });
+    this._isReachable = false;
+
+    // Maximum backoff is 15mins when a device/program is visible
+    this._backoff = backoff.exponential({
+      initialDelay: 100,
+      maxDelay: 900000
+    }).on('backoff', (number, delay) => this._onBackoffStarted(delay))
+      .on('ready', () => this._connectToDacpDevice());
+
+    this._dacpClient = new DacpClient(log)
+      .on('connected', sessionId => this._onDacpConnected(sessionId))
+      .on('failed', e => this._onDacpFailure(e));
 
     this._services = this.createServices(homebridge);
   }
@@ -79,19 +88,42 @@ class DacpAccessory {
     callback();
   }
 
-  serviceUp(service) {
+  accessoryUp(service) {
+    if (this._isReachable) {
+      return;
+    }
+
+    this.log(`The accessory ${this.name} is announced.`);
+
+    this._isReachable = true;
     this._remoteHost = service.host;
     this._remotePort = service.port;
 
-    this._connectToDacpDevice();
+    // Let backoff trigger the connection
+    this._backoff.backoff();
   }
 
-  serviceDown() {
-    this._dacpClient.logout();
+  accessoryDown() {
+    this.log(`The accessory ${this.name} is down.`);
+
+    // Do not attempt to reconnect again
+    this._backoff.reset();
+
+    this._services.forEach(service => {
+      if (service.accessoryDown) {
+        service.accessoryDown();
+      }
+    });
+
+    this._remoteHost = undefined;
+    this._remotePort = undefined;
+    this._isReachable = false;
+
+    // this.updateReachability(false);
   }
 
-  _startRetrievingUpdates() {
-    this._dacpClient.getUpdate()
+  _schedulePlayStatusUpdate() {
+    this._dacpClient.requestPlayStatus()
       .then(response => {
         if (response.cmst) {
           this._updateNowPlaying(response.cmst);
@@ -100,23 +132,29 @@ class DacpAccessory {
       })
       .then(() => {
         if (this._speakerService) {
-          this._speakerService.update();
+          return this._speakerService.update();
         }
+
+        return Promise.resolve();
       })
-      .then(() => this._startRetrievingUpdates())
+      .then(() => {
+        this._schedulePlayStatusUpdate();
+      })
       .catch(e => {
-        this.log(`[${this.name}] Retrieving updates from DACP server failed.`);
+        this.log(`[${this.name}] Retrieving updates from DACP server failed with error ${e}`);
       });
   }
 
   _updateNowPlaying(response) {
     const state = {
-      track: response.cann,
-      album: response.canl,
-      artist: response.cana,
+      track: response.cann || '',
+      album: response.canl || '',
+      artist: response.cana || '',
+      genre: response.cang || '',
+      mediaType: response.cmmk || -1,
       position: (response.cast - response.cant),
-      duration: response.cast,
-      playerState: response.caps
+      duration: response.cast || Number.NaN,
+      playerState: response.caps || 0
     };
 
     this._nowPlayingService.updateNowPlaying(state);
@@ -130,39 +168,53 @@ class DacpAccessory {
     this._playerControlsService.updatePlayerState(state);
   }
 
+  _connectToDacpDevice() {
+    // Do not connect if a backoff interval expires and
+    // the device has gone down in the mean time.
+    if (!this._isReachable) {
+      return;
+    }
+
+    this.log(`Connecting to ${this._remoteHost}:${this._remotePort} for ${this.name}`);
+    this._dacpClient.login({ host: `${this._remoteHost}:${this._remotePort}`, pairing: this.pairing })
+      .catch(error => {
+        this.log(`[${this.name}] Connection to DACP server failed: ${error}`);
+
+        this._backoff.backoff();
+      });
+  }
+
+  _onDacpConnected(sessionId) {
+    this._backoff.reset();
+
+    this._dacpClient.getServerInfo()
+      .then(serverInfo => {
+        if (serverInfo.msrv && serverInfo.msrv.minm) {
+          this.log(`Connected to ${serverInfo.msrv.minm} with session ID ${sessionId}`);
+        }
+
+        this._schedulePlayStatusUpdate();
+
+        // this.updateReachability(true);
+      })
+      .catch(e => {
+        this.log(`[${this.name}] Retrieving server info from DACP server failed with error ${e}`);
+      });
+  }
+
   _onDacpFailure(e) {
     this.log(`Fatal error while talking to ${this.name}:`);
     this.log('');
-    this.log(`  Error: ${JSON.stringify(error)}`);
+    this.log(`  Error: ${JSON.stringify(e)}`);
     this.log('');
-    this._dacpErrors++;
-    this._dacpClient.logout();
 
-    if (this._dacpErrors < 5) {
-      const timeout = 120000;
-      this.log(`Restarting DACP client in ${timeout / 1000} seconds.`);
-      setTimeout(() => this._connectToDacpDevice(), timeout);
-    }
-    else {
-      this.log('There were 5 failures in the past 600s. Giving up.');
-      this.log('');
-      this.log('Restarting homebridge might fix the problem. If not, file an issue at https://github.com/grover/homebridge-dacp.');
-    }
-
-    this.log('');
+    this._backoff.backoff();
   }
 
-  _connectToDacpDevice() {
-    this._dacpClient.login({ host: `${this._remoteHost}:${this._remotePort}`, pairing: this.pairing })
-      .then(() => this._dacpClient.getServerInfo())
-      .then(serverInfo => this.log(`Connected to ${serverInfo.msrv.minm}`))
-      .then(() => this._startRetrievingUpdates())
-      .catch(error => {
-        this.log(`[${this.name}] Connection to DACP server failed: ${error}`);
-        this._dacpClient.logout();
-
-        this._connectToDacpDevice();
-      });
+  _onBackoffStarted(delay) {
+    if (this._isReachable) {
+      this.log(`Attempting to reconnect to ${this.name} in ${delay / 1000} seconds.`);
+    }
   }
 }
 

@@ -60,7 +60,7 @@ const DacpPlatform = class {
     // Update accessory and tell it that it's device is available.
     this._accessories.forEach(accessory => {
       if (accessory.serviceName && service.name === accessory.serviceName) {
-        accessory.serviceUp(service);
+        accessory.accessoryUp(service);
       }
     });
   }
@@ -69,7 +69,7 @@ const DacpPlatform = class {
     // Update accessory and tell it that it's device is unavailable.
     this._accessories.forEach(accessory => {
       if (accessory.serviceName && service.name === accessory.serviceName) {
-        accessory.serviceDown(service);
+        accessory.accessoryDown(service);
       }
     });
   }
@@ -105,7 +105,7 @@ const DacpPlatform = class {
 
     // Mark all accessories as unavailable
     this._accessories.forEach(accessory => {
-      accessory.serviceDown();
+      accessory.accessoryDown();
     });
   }
 
@@ -114,16 +114,16 @@ const DacpPlatform = class {
 
     devices.forEach(device => {
 
-      this.log(`Found device in config: "${device.name}"`);
+      this.log(`Found accessory in config: "${device.name}"`);
 
       if (!device.pairing || !device.serviceName) {
         const passcode = this._randomBaseString(4, 10);
 
         this.log('');
-        this.log(`Beginning "${device.name}" remote control announcements for the device.`);
+        this.log(`Skipping creation of the accessory "${device.name}" because it doesn\'t have a pairing code or`);
+        this.log(`service name yet. You need to pair the device/iTunes, reconfigure and restart homebridge.`);
         this.log('');
-        this.log('Skipping creation of the accessory because it doesn\'t have a pairing code or service name yet.');
-        this.log('You need to pair the device/iTunes, reconfigure and restart homebridge.');
+        this.log(`Beginning remote control announcements for the accessory "${device.name}".`);
         this.log('');
         this.log(`\tUse passcode ${passcode} to pair with this remote control.`);
         this.log('');
@@ -152,19 +152,19 @@ const DacpPlatform = class {
     const dacpRemote = new DacpRemote(remoteConfig, this.log);
 
     dacpRemote.on('paired', data => {
-      this.log(`Added pairing for "${remote.name}":`);
-      this.log(``);
-      this.log(`{`);
+      this.log(`Completed pairing for "${remote.name}":`);
+      this.log('');
+      this.log('{');
       this.log(`  "name": "${remote.name}",`);
       this.log(`  "pairing": "${remoteConfig.pair}",`);
       this.log(`  "serviceName": "${data.serviceName}"`);
-      this.log(`}`);
-      this.log(``);
-      this.log(`Please add the above block to the remote in your homebridge config.json`);
-      this.log(``);
-      this.log(`YOU MUST RESTART HOMEBRIDGE AFTER YOU ADDED THE ABOVE LINES OR THE PLUGIN WILL NOT WORK.`);
-      this.log(``);
-
+      this.log('}');
+      this.log('');
+      this.log('Please add the above block to the accessory in your homebridge config.json');
+      this.log('');
+      this.log('YOU MUST RESTART HOMEBRIDGE AFTER YOU ADDED THE ABOVE LINES OR THE ACCESSORY');
+      this.log('WILL NOT WORK.');
+      this.log('');
     });
 
     this._remotes.push(dacpRemote);

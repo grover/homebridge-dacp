@@ -51,6 +51,34 @@ module.exports = {
     inherits(Characteristic.Artist, Characteristic);
 
     ////////////////////////////////////////////////////////////////////////////
+    // Genre Characteristic
+    ////////////////////////////////////////////////////////////////////////////
+    Characteristic.Genre = function () {
+      Characteristic.call(this, 'Genre', Characteristic.Genre.UUID);
+      this.setProps({
+        format: Characteristic.Formats.STRING,
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+      });
+      this.value = this.getDefaultValue();
+    };
+    Characteristic.Genre.UUID = '8087750B-8B8C-451E-B907-8E3BAD8DCB1E';
+    inherits(Characteristic.Genre, Characteristic);
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Media Type Characteristic
+    ////////////////////////////////////////////////////////////////////////////
+    Characteristic.MediaType = function () {
+      Characteristic.call(this, 'Media Type', Characteristic.MediaType.UUID);
+      this.setProps({
+        format: Characteristic.Formats.INT,
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+      });
+      this.value = this.getDefaultValue();
+    };
+    Characteristic.MediaType.UUID = '9898982C-7B70-47AD-A81D-211BFE5AFBF2';
+    inherits(Characteristic.MediaType, Characteristic);
+
+    ////////////////////////////////////////////////////////////////////////////
     // Position Characteristic
     ////////////////////////////////////////////////////////////////////////////
     Characteristic.MediaCurrentPosition = function () {
@@ -90,6 +118,8 @@ module.exports = {
       // Optional Characteristics
       this.addOptionalCharacteristic(Characteristic.Album);
       this.addOptionalCharacteristic(Characteristic.Artist);
+      this.addOptionalCharacteristic(Characteristic.Genre);
+      this.addOptionalCharacteristic(Characteristic.MediaType);
       this.addOptionalCharacteristic(Characteristic.MediaCurrentPosition);
       this.addOptionalCharacteristic(Characteristic.MediaItemDuration);
       this.addOptionalCharacteristic(Characteristic.Name);

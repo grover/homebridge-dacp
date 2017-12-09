@@ -655,6 +655,14 @@ const daap = {
     "name": "dmap.itemdateplayed",
     "type": "date"
   },
+  "merr": {
+    "name": "dmap.error",
+    "type": "list"
+  },
+  "mers": {
+    "name": "dmap.error2",
+    "type": "int"
+  },
   "mext": {
     "name": "dmap.objectextradata",
     "type": "short"
