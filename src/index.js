@@ -2,6 +2,7 @@ const version = require('../package.json').version;
 const DacpAccessory = require('./DacpAccessory');
 const DacpBrowser = require('./dacp/DacpBrowser');
 const DacpRemote = require('./dacp/DacpRemote');
+const HomeKitTypes = require('./HomeKitTypes');
 
 const HOMEBRIDGE = {
   Accessory: null,
@@ -40,6 +41,8 @@ const DacpPlatform = class {
     this._remotes = [];
 
     this.api.on('didFinishLaunching', this._didFinishLaunching.bind(this));
+
+    HomeKitTypes.registerWith(api.hap);
   }
 
   _didFinishLaunching() {

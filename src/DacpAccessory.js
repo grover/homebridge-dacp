@@ -20,6 +20,8 @@
 const inherits = require('util').inherits;
 const DacpClient = require('./dacp/DacpClient');
 
+const NowPlayingService = require('./NowPlayingService');
+
 let Accessory, Characteristic, Service;
 
 class DacpAccessory {
@@ -39,18 +41,19 @@ class DacpAccessory {
     this._dacpClient = new DacpClient(log);
     this._dacpClient.on('readyStateChanged', () => this.log(this._dacpClient.readyState))
 
-    this._services = this.createServices();
+    this._services = this.createServices(homebridge);
   }
 
   getServices() {
     return this._services;
   }
 
-  createServices() {
+  createServices(homebridge) {
     return [
       this.getAccessoryInformationService(),
       this.getSpeakerService(),
-      this.getPlayerService()
+      this.getPlayerService(),
+      this.getNowPlayingService(homebridge)
     ].filter(m => m != null);
   }
 
@@ -82,7 +85,13 @@ class DacpAccessory {
   }
 
   getPlayerService() {
-    return null;
+    // const playbackService = new Service.PlaybackDeviceService(this.name);
+    // return playbackService;
+  }
+
+  getNowPlayingService(homebridge) {
+    this._nowPlayingService = new NowPlayingService(homebridge, this.log, this.name);
+    return this._nowPlayingService.getService();
   }
 
   identify(callback) {
@@ -105,7 +114,10 @@ class DacpAccessory {
   _startRetrievingUpdates() {
     this._dacpClient.getUpdate()
       .then(response => {
-        // TODO: Update Now playing service
+        if (response.cmst) {
+          this._updateNowPlaying(response.cmst);
+        }
+
         // TODO: Update player service
         //this.log(response);
       })
@@ -114,6 +126,18 @@ class DacpAccessory {
       .catch(() => {
         this.log(`[${this.name}] Retrieving updates from DACP server failed.`);
       });
+  }
+
+  _updateNowPlaying(response) {
+    const state = {
+      track: response.cann,
+      album: response.canl,
+      artist: response.cana,
+      position: (response.cast - response.cant),
+      duration: response.cast
+    };
+
+    this._nowPlayingService.updateNowPlaying(state);
   }
 
   _refreshSpeakerCharacteristics() {

@@ -517,7 +517,7 @@ const daap = {
   },
   "canp": {
     "name": "dacp.nowplayingids",
-    "type": "string"
+    "type": "int"
   },
   "caps": {
     "name": "dacp.playerstate",
