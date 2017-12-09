@@ -5,7 +5,11 @@
   "main": "src/index.js",
   "scripts": {},
   "author": "Michael Fröhlich",
-  "license": "ISC",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grover/homebridge-dacp.git"
+  },
   "dependencies": {
     "mdns": "^2.3.4",
     "moment": "^2.19.3",

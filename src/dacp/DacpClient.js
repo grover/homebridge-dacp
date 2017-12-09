@@ -47,16 +47,19 @@ class DacpClient extends EventEmitter {
   }
 
   logout() {
-    if (this._readyState != 'connected') {
-      throw new Error('Can\'t disconnect a client that\'s not connected.');
+    if (this._readyState !== 'connected') {
+      this._readyState = 'disconnected';
+      return;
     }
 
     this.sendRequest('logout', {})
       .then(() => {
         this._sessionId = undefined;
+        this._readyState = 'disconnected';
       })
       .catch(() => {
         this._sessionId = undefined;
+        this._readyState = 'disconnected';
       });
   }
 
@@ -122,10 +125,20 @@ class DacpClient extends EventEmitter {
 
       request(options, function (error, response) {
         if (error) {
+          this.emit('error', error);
           reject(error);
+          return;
         }
 
-        response = daap.decode(response.body);
+        try {
+          response = daap.decode(response.body);
+        }
+        catch (e) {
+          this.emit('error', error);
+          reject(e);
+          return;
+        }
+
         resolve(response);
       });
     });

@@ -117,14 +117,18 @@ const DacpPlatform = class {
       this.log(`Found device in config: "${device.name}"`);
 
       if (!device.pairing || !device.serviceName) {
+        const passcode = this._randomBaseString(4, 10);
+
         this.log('');
         this.log(`Beginning "${device.name}" remote control announcements for the device.`);
         this.log('');
         this.log('Skipping creation of the accessory because it doesn\'t have a pairing code or service name yet.');
         this.log('You need to pair the device/iTunes, reconfigure and restart homebridge.');
         this.log('');
+        this.log(`\tUse passcode ${passcode} to pair with this remote control.`);
+        this.log('');
 
-        this._createRemote(device);
+        this._createRemote(device, passcode);
         return;
       }
 
@@ -137,11 +141,11 @@ const DacpPlatform = class {
     callback(this._accessories);
   }
 
-  _createRemote(remote) {
+  _createRemote(remote, passcode) {
 
     const remoteConfig = {
       pair: this._randomBaseString(16, 16).toUpperCase(),
-      pairPasscode: this._randomBaseString(4, 10),
+      pairPasscode: passcode,
       deviceName: remote.name,
       deviceType: 'iPad'
     };
@@ -151,13 +155,16 @@ const DacpPlatform = class {
       this.log(`Added pairing for "${remote.name}":`);
       this.log(``);
       this.log(`{`);
-      this.log(`  "name": "... name of the accessory ...",`);
+      this.log(`  "name": "${remote.name}",`);
       this.log(`  "pairing": "${remoteConfig.pair}",`);
       this.log(`  "serviceName": "${data.serviceName}"`);
       this.log(`}`);
       this.log(``);
       this.log(`Please add the above block to the remote in your homebridge config.json`);
       this.log(``);
+      this.log(`YOU MUST RESTART HOMEBRIDGE AFTER YOU ADDED THE ABOVE LINES OR THE PLUGIN WILL NOT WORK.`);
+      this.log(``);
+
     });
 
     this._remotes.push(dacpRemote);

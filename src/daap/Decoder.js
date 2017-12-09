@@ -847,7 +847,7 @@ const daap = {
 function _decode(buffer, start, end) {
   const result = {};
 
-  for (let index = start; index < end;) {
+  for (let index = start; index <= end - 8;) {
     const code = buffer.toString('utf8', index, index + 4);
     const length = buffer.slice(index + 4, index + 8).readUInt32BE(0)
     const type = daap[code];

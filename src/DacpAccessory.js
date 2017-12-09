@@ -25,6 +25,9 @@ class DacpAccessory {
 
     this._dacpClient = new DacpClient(log);
     this._dacpClient.on('readyStateChanged', () => this.log(this._dacpClient.readyState))
+    this._dacpClient.on('error', e => {
+      this._onDacpFailure(e);
+    });
 
     this._services = this.createServices(homebridge);
   }
@@ -77,11 +80,10 @@ class DacpAccessory {
   }
 
   serviceUp(service) {
-    this._dacpClient.login({ host: `${service.host}:${service.port}`, pairing: this.pairing })
-      .then(() => this._dacpClient.getServerInfo())
-      .then(serverInfo => this.log(`Connected to ${serverInfo.msrv.minm}`))
-      .then(() => this._startRetrievingUpdates())
-      .catch(error => this.log(`[${this.name}] Connection to DACP server failed.`));
+    this._remoteHost = service.host;
+    this._remotePort = service.port;
+
+    this._connectToDacpDevice();
   }
 
   serviceDown() {
@@ -96,9 +98,13 @@ class DacpAccessory {
           this._updatePlayerControlService(response.cmst);
         }
       })
-      .then(() => this._speakerService.update())
+      .then(() => {
+        if (this._speakerService) {
+          this._speakerService.update();
+        }
+      })
       .then(() => this._startRetrievingUpdates())
-      .catch(() => {
+      .catch(e => {
         this.log(`[${this.name}] Retrieving updates from DACP server failed.`);
       });
   }
@@ -122,6 +128,41 @@ class DacpAccessory {
     };
 
     this._playerControlsService.updatePlayerState(state);
+  }
+
+  _onDacpFailure(e) {
+    this.log(`Fatal error while talking to ${this.name}:`);
+    this.log('');
+    this.log(`  Error: ${JSON.stringify(error)}`);
+    this.log('');
+    this._dacpErrors++;
+    this._dacpClient.logout();
+
+    if (this._dacpErrors < 5) {
+      const timeout = 120000;
+      this.log(`Restarting DACP client in ${timeout / 1000} seconds.`);
+      setTimeout(() => this._connectToDacpDevice(), timeout);
+    }
+    else {
+      this.log('There were 5 failures in the past 600s. Giving up.');
+      this.log('');
+      this.log('Restarting homebridge might fix the problem. If not, file an issue at https://github.com/grover/homebridge-dacp.');
+    }
+
+    this.log('');
+  }
+
+  _connectToDacpDevice() {
+    this._dacpClient.login({ host: `${this._remoteHost}:${this._remotePort}`, pairing: this.pairing })
+      .then(() => this._dacpClient.getServerInfo())
+      .then(serverInfo => this.log(`Connected to ${serverInfo.msrv.minm}`))
+      .then(() => this._startRetrievingUpdates())
+      .catch(error => {
+        this.log(`[${this.name}] Connection to DACP server failed.`);
+        this._dacpClient.logout();
+
+        this._connectToDacpDevice();
+      });
   }
 }
 
