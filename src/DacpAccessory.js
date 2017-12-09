@@ -158,7 +158,7 @@ class DacpAccessory {
       .then(serverInfo => this.log(`Connected to ${serverInfo.msrv.minm}`))
       .then(() => this._startRetrievingUpdates())
       .catch(error => {
-        this.log(`[${this.name}] Connection to DACP server failed.`);
+        this.log(`[${this.name}] Connection to DACP server failed: ${error}`);
         this._dacpClient.logout();
 
         this._connectToDacpDevice();

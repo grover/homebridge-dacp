@@ -18,7 +18,7 @@ required - for example if the Apple TV is connected to an A/V receiver that is i
 
 After [Homebridge](https://github.com/nfarina/homebridge) has been installed:
 
- `sudo npm install -g homebridge-dacp`
+ `sudo npm install -g homebridge-dacp --unsafe-perm`
 
 ## Example config.json
 
