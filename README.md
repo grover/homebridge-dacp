@@ -70,14 +70,37 @@ Each device will expose multiple services:
 
 * Accessory Information Service
 * Speaker Service
-* [Player Service](src/HomeKitTypes.js)
+* [Player Controls Service](src/hap/PlayerControlsTypes.js)
+* [Now Playing Service](src/hap/NowPlayingTypes.js)
+
+### Player Controls Service
+
+This service provides status information about the currently playing media. This contains
+the following fields:
+
+| Characteristic | UUID | Type | Permissions | Description |
+|----------------|------|------|-------------|-------------|
+| PlayPause | `BA16B86C-DC86-482A-A70C-CC9C924DB842` | Boolean | Read, Write, Notify | Represents the playback state of the device/iTunes. |
+
+
+### Now Playing Service
+
+This service provides status information about the currently playing media. This contains
+the following fields:
+
+| Characteristic | UUID | Type | Permissions | Description |
+|----------------|------|------|-------------|-------------|
+| Title | `00003001-0000-1000-8000-135D67EC4377` | String | Read, Notify | The title of the currently playing track. |
+| Album | `00003002-0000-1000-8000-135D67EC4377` | String | Read, Notify | The album of the currently playing track. |
+| Artist | `00003003-0000-1000-8000-135D67EC4377` | String | Read, Notify | The artist of the currently playing track. |
+| Position | `00002007-0000-1000-8000-135D67EC4377` | String | Read, Notify | The current playback position. |
+| Duration | `00003005-0000-1000-8000-135D67EC4377` | String | Read, Notify | The duration of the current track. |
 
 ## Supported clients
 
 This platform and the devices it controls have been verified to work with the following apps on iOS 11
 
 * Elgato Eve
-* Home
 
 ## Supported devices and programs
 

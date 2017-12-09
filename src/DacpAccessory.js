@@ -1,26 +1,11 @@
-//
-// Accessory, which provides a bunch of services for each of the discovered/configured
-// DACP devices.
-//
-// Services:
-// - Accessory Information Service
-//
-// - Speaker service (unless device is Apple TV, currently only iTunes)
-// -- Volume
-// -- Mute state
-//
-// - Playback Status Service
-// -- Play/Pause toggle switch (?)
-// -- IsPlaying information (?)
-// -- Seeking?
-//
-
 "use strict";
 
 const inherits = require('util').inherits;
 const DacpClient = require('./dacp/DacpClient');
 
 const NowPlayingService = require('./NowPlayingService');
+const PlayerControlsService = require('./PlayerControlsService');
+const SpeakerService = require('./SpeakerService');
 
 let Accessory, Characteristic, Service;
 
@@ -51,8 +36,8 @@ class DacpAccessory {
   createServices(homebridge) {
     return [
       this.getAccessoryInformationService(),
-      this.getSpeakerService(),
-      this.getPlayerService(),
+      this.getSpeakerService(homebridge),
+      this.getPlayerControlsService(homebridge),
       this.getNowPlayingService(homebridge)
     ].filter(m => m != null);
   }
@@ -67,30 +52,22 @@ class DacpAccessory {
       .setCharacteristic(Characteristic.HardwareRevision, this.version);
   }
 
-  getSpeakerService() {
-    this._speakerService = new Service.Speaker(this.name);
+  getSpeakerService(homebridge) {
     if (this.features && this.features['volume-control'] === false) {
       return;
     }
 
-    this._speakerService.getCharacteristic(Characteristic.Volume)
-      .on('get', this._getVolume.bind(this))
-      .on('set', this._setVolume.bind(this));
-
-    this._speakerService.getCharacteristic(Characteristic.Mute)
-      .on('get', this._getMute.bind(this))
-      .on('set', this._setMute.bind(this));
-
-    return this._speakerService;
+    this._speakerService = new SpeakerService(homebridge, this.log, this.name, this._dacpClient);
+    return this._speakerService.getService();
   }
 
-  getPlayerService() {
-    // const playbackService = new Service.PlaybackDeviceService(this.name);
-    // return playbackService;
+  getPlayerControlsService(homebridge) {
+    this._playerControlsService = new PlayerControlsService(homebridge, this.log, this.name, this._dacpClient);
+    return this._playerControlsService.getService();
   }
 
   getNowPlayingService(homebridge) {
-    this._nowPlayingService = new NowPlayingService(homebridge, this.log, this.name);
+    this._nowPlayingService = new NowPlayingService(homebridge, this.log, this.name, this._dacpClient);
     return this._nowPlayingService.getService();
   }
 
@@ -116,12 +93,10 @@ class DacpAccessory {
       .then(response => {
         if (response.cmst) {
           this._updateNowPlaying(response.cmst);
+          this._updatePlayerControlService(response.cmst);
         }
-
-        // TODO: Update player service
-        //this.log(response);
       })
-      .then(() => this._refreshSpeakerCharacteristics())
+      .then(() => this._speakerService.update())
       .then(() => this._startRetrievingUpdates())
       .catch(() => {
         this.log(`[${this.name}] Retrieving updates from DACP server failed.`);
@@ -134,104 +109,19 @@ class DacpAccessory {
       album: response.canl,
       artist: response.cana,
       position: (response.cast - response.cant),
-      duration: response.cast
+      duration: response.cast,
+      playerState: response.caps
     };
 
     this._nowPlayingService.updateNowPlaying(state);
   }
 
-  _refreshSpeakerCharacteristics() {
-    this._dacpClient.getProperty('dmcp.volume')
-      .then(response => {
-        if (response.cmgt && response.cmgt.cmvo !== undefined) {
-          this._updateSpeakerCharacteristics(response.cmgt.cmvo);
-        }
-      })
-      .catch(error => {
-        this.log('Failed to retrieve speaker volume ' + error);
-      });
-  }
+  _updatePlayerControlService(response) {
+    const state = {
+      playerState: response.caps
+    };
 
-  _updateSpeakerCharacteristics(volume) {
-    this.log("Updating characteristics with current volume: v=" + volume);
-
-    this._speakerService.getCharacteristic(Characteristic.Volume)
-      .updateValue(volume, undefined, undefined);
-    this._speakerService.getCharacteristic(Characteristic.Mute)
-      .updateValue(volume === 0, undefined, undefined);
-
-    this._volume = volume;
-    if (volume != 0 && this._hasMuted) {
-      this._unmutedViaDevice();
-    }
-  }
-
-  _getVolume(callback) {
-    this._dacpClient.getProperty('dmcp.volume')
-      .then(response => {
-        this.log("Returning current volume: v=" + response.cmgt.cmvo);
-        callback(undefined, response.cmgt.cmvo);
-        this._volume = response.cmgt.cmvo;
-      })
-      .catch(error => {
-        callback(error, undefined);
-      });
-  }
-
-  _setVolume(volume, callback) {
-    this.log("Setting current volume to v=" + volume);
-
-    this._dacpClient.setProperty('dmcp.volume', volume)
-      .then(() => {
-        callback();
-        this._updateSpeakerCharacteristics(volume);
-      })
-      .catch(error => {
-        callback(error);
-      });
-  }
-
-  _getMute(callback) {
-    this._dacpClient.getProperty('dmcp.volume')
-      .then(response => {
-        this.log("Returning current mute state: v=" + response.cmgt.cmvo === 0);
-        callback(undefined, response.cmgt.cmvo === 0);
-      })
-      .catch(error => {
-        callback(error, undefined);
-      });
-  }
-
-  _setMute(muted, callback) {
-    this.log(`Setting current mute state to ${muted ? "muted" : "unmuted"}`);
-
-    if (muted) {
-      this._mute(callback);
-    }
-    else {
-      this._unmuteViaHomeKit(callback);
-    }
-  }
-
-  _mute(callback) {
-    this._hasMuted = true;
-    this._restoreVolume = this._volume;
-
-    this._setVolume(0, callback);
-  }
-
-  _unmuteViaHomeKit(callback) {
-    // Unmuted via HomeKit, muted via HomeKit
-    const volume = this._restoreVolume || 25;
-    this._setVolume(volume, callback);
-    this._hasMuted = false;
-    this._restoreVolume = undefined;
-  }
-
-  _unmutedViaDevice() {
-    // Unmuted via device, muted via HomeKit
-    this._hasMuted = false;
-    this._restoreVolume = undefined;
+    this._playerControlsService.updatePlayerState(state);
   }
 }
 

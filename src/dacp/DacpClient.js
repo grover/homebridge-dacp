@@ -31,7 +31,7 @@ class DacpClient extends EventEmitter {
     this._setReadyState('authenticating');
     this._host = options.host;
 
-    return this._sendRequest('login', { 'pairing-guid': '0x' + options.pairing }).then(response => {
+    return this.sendRequest('login', { 'pairing-guid': '0x' + options.pairing }).then(response => {
       if (response.mlog && response.mlog.mlid) {
         this._sessionId = response.mlog.mlid;
         this.log(`Session ID ${this._sessionId}`);
@@ -51,7 +51,7 @@ class DacpClient extends EventEmitter {
       throw new Error('Can\'t disconnect a client that\'s not connected.');
     }
 
-    this._sendRequest('logout', {})
+    this.sendRequest('logout', {})
       .then(() => {
         this._sessionId = undefined;
       })
@@ -66,7 +66,7 @@ class DacpClient extends EventEmitter {
     }
 
     const self = this;
-    return this._sendRequest('ctrl-int/1/playstatusupdate', { 'revision-number': this._revisionNumber }).catch(error => {
+    return this.sendRequest('ctrl-int/1/playstatusupdate', { 'revision-number': this._revisionNumber }).catch(error => {
       this._revisionNumber = 1;
       return self.getUpdate();
     }).then(response => {
@@ -82,7 +82,7 @@ class DacpClient extends EventEmitter {
 
   async getServerInfo() {
     return new Promise((resolve, reject) => {
-      return this._sendRequest('server-info').catch(error => {
+      return this.sendRequest('server-info').catch(error => {
         reject(error);
       }).then(response => {
         resolve(response);
@@ -91,22 +91,16 @@ class DacpClient extends EventEmitter {
   }
 
   async getProperty(prop) {
-    return this._sendRequest('ctrl-int/1/getproperty', { 'properties': prop });
+    return this.sendRequest('ctrl-int/1/getproperty', { 'properties': prop });
   }
 
   async setProperty(prop, value) {
     const data = {};
     data[prop] = value;
-    return this._sendRequest('ctrl-int/1/setproperty', data);
+    return this.sendRequest('ctrl-int/1/setproperty', data);
   }
 
-  async sendRequest() {
-    if (this._readyState != 'connected') {
-      throw new Error('Can\'t send requests to the client.');
-    }
-  }
-
-  async _sendRequest(relativeUri, data) {
+  async sendRequest(relativeUri, data) {
 
     return new Promise((resolve, reject) => {
 
