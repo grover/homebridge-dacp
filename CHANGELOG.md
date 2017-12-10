@@ -8,6 +8,17 @@ The reachable status was previously reported when the accessory has seen
 MDNS announcements for the Apple TV or iTunes. This version updates the
 reachable state depending upon the actual network connection state.
 
+- Made zero the default media type value in the NowPlayingService
+
+This aligns the value with reports from Apple TV, when playing media from apps.
+The reported media type is zero in those cases.
+
+- Report actual playback position via getproperty calls instead of guessing
+
+Previous version tried to guess the playback position by essentially counting
+the seconds. This version periodically acquires the actual playback position and
+updates the characteristic in response to reports from iTunes or Apple TV.
+
 - Now Playing Service shows all characteristics immediately
 
 If nothing was playing most of the characteristics were missing from the now

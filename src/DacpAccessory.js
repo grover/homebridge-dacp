@@ -158,18 +158,27 @@ class DacpAccessory {
   }
 
   _updateNowPlaying(response) {
+
     const state = {
-      track: response.cann || '',
-      album: response.canl || '',
-      artist: response.cana || '',
-      genre: response.cang || '',
-      mediaType: response.cmmk || -1,
-      position: (response.cast - response.cant),
-      duration: response.cast || Number.NaN,
-      playerState: response.caps || 0
+      track: this._getProperty(response, 'cann', ''),
+      album: this._getProperty(response, 'canl', ''),
+      artist: this._getProperty(response, 'cana', ''),
+      genre: this._getProperty(response, 'cang', ''),
+      mediaType: this._getProperty(response, 'cmmk', 0),
+      remaining: this._getProperty(response, 'cant', Number.NaN),
+      duration: this._getProperty(response, 'cast', Number.NaN),
+      playerState: this._getProperty(response, 'caps', 0)
     };
 
     this._nowPlayingService.updateNowPlaying(state);
+  }
+
+  _getProperty(response, prop, defaultValue) {
+    if (response.hasOwnProperty(prop)) {
+      return response[prop];
+    }
+
+    return defaultValue;
   }
 
   _updatePlayerControlService(response) {

@@ -14,8 +14,7 @@ class NowPlayingService {
     this.log = log;
     this.name = name;
     this._dacp = dacp;
-    this._interval = undefined;
-    this._trackPosition = 0;
+    this._timeout = undefined;
 
     this.createService();
   }
@@ -49,6 +48,9 @@ class NowPlayingService {
   }
 
   updateNowPlaying(state) {
+    this._mediaDuration = this.duration;
+    this._mediaRemaining = this.remaining;
+
     this._service.getCharacteristic(Characteristic.Title)
       .updateValue(state.track);
 
@@ -64,24 +66,13 @@ class NowPlayingService {
     this._service.getCharacteristic(Characteristic.MediaType)
       .updateValue(state.mediaType);
 
-    this._setTime(Characteristic.MediaCurrentPosition, state.position / 1000);
-    this._setTime(Characteristic.MediaItemDuration, state.duration / 1000);
-    this._trackPosition = state.position / 1000;
-
-    if (state.playerState === 4) {
-      if (!this._interval) {
-        this._interval = setInterval(this._updatePosition.bind(this), 1000);
-      }
-    }
-    else if (this._interval) {
-      clearInterval(this._interval);
-      this._interval = undefined;
-    }
+    this._updatePosition();
+    this._respectPlayerState(state);
   }
 
   _updatePosition() {
-    this._trackPosition += 1;
-    this._setTime(Characteristic.MediaCurrentPosition, this._trackPosition);
+    this._setTime(Characteristic.MediaCurrentPosition, (this._mediaDuration - this._mediaRemaining) / 1000);
+    this._setTime(Characteristic.MediaItemDuration, this._mediaDuration / 1000);
   }
 
   _setTime(characteristic, totalSeconds) {
@@ -95,6 +86,35 @@ class NowPlayingService {
 
     this._service.getCharacteristic(characteristic)
       .updateValue(value);
+  }
+
+  _respectPlayerState(state) {
+    if (state.playerState === 4) {
+      if (!this._timeout) {
+        this._timeout = setTimeout(this._requestPlaybackPosition.bind(this), 1000);
+      }
+    }
+    else if (this._timeout) {
+      clearTimeout(this._timeout);
+      this._timeout = undefined;
+    }
+  }
+
+  _requestPlaybackPosition() {
+    this._dacp.getProperty('dacp.remainingtime')
+      .then(response => {
+        this.log(JSON.stringify(response));
+
+        this._timeout = setTimeout(this._requestPlaybackPosition.bind(this), 1000);
+      })
+      .catch(e => {
+        this.log('Failed to retrieve the current playback position. Stopping continuous updates.');
+
+        this._mediaDuration = Number.NaN;
+        this._mediaRemaining = Number.NaN;
+
+        this._updatePosition();
+      });
   }
 };
 
