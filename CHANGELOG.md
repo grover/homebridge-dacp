@@ -1,7 +1,7 @@
 
 # Changelog
 
-## Work in progress - Version 0.0.6 - 2017-12-10
+## Version 0.0.6 - 2017-12-10
 
 - Implemented exponential backoff to recover broken DACP connections
 - Added media type to the NowPlayingService
