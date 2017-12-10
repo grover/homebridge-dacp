@@ -41,8 +41,8 @@ class SpeakerService {
   update() {
     return this._dacp.getProperty('dmcp.volume')
       .then(response => {
-        if (response.cmgt && response.cmgt.cmvo !== undefined) {
-          this._updateSpeakerCharacteristics(response.cmgt.cmvo);
+        if (response && response.cmvo !== undefined) {
+          this._updateSpeakerCharacteristics(response.cmvo);
         }
       })
       .catch(error => {
@@ -67,9 +67,9 @@ class SpeakerService {
   _getVolume(callback) {
     this._dacp.getProperty('dmcp.volume')
       .then(response => {
-        this.log("Returning current volume: v=" + response.cmgt.cmvo);
-        callback(undefined, response.cmgt.cmvo);
-        this._volume = response.cmgt.cmvo;
+        this.log("Returning current volume: v=" + response.cmvo);
+        callback(undefined, response.cmvo);
+        this._volume = response.cmvo;
       })
       .catch(error => {
         callback(error, undefined);
@@ -92,8 +92,8 @@ class SpeakerService {
   _getMute(callback) {
     this._dacp.getProperty('dmcp.volume')
       .then(response => {
-        this.log("Returning current mute state: v=" + response.cmgt.cmvo === 0);
-        callback(undefined, response.cmgt.cmvo === 0);
+        this.log("Returning current mute state: v=" + response.cmvo === 0);
+        callback(undefined, response.cmvo === 0);
       })
       .catch(error => {
         callback(error, undefined);

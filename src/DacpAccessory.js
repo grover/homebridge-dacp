@@ -138,7 +138,7 @@ class DacpAccessory {
     this._dacpClient.requestPlayStatus()
       .then(response => {
         if (response.cmst) {
-          this._updateNowPlaying(response.cmst);
+          this._nowPlayingService.updateNowPlaying(response.cmst);
           this._updatePlayerControlService(response.cmst);
         }
       })
@@ -155,30 +155,6 @@ class DacpAccessory {
       .catch(e => {
         this.log(`[${this.name}] Retrieving updates from DACP server failed with error ${e}`);
       });
-  }
-
-  _updateNowPlaying(response) {
-
-    const state = {
-      track: this._getProperty(response, 'cann', ''),
-      album: this._getProperty(response, 'canl', ''),
-      artist: this._getProperty(response, 'cana', ''),
-      genre: this._getProperty(response, 'cang', ''),
-      mediaType: this._getProperty(response, 'cmmk', 0),
-      remaining: this._getProperty(response, 'cant', Number.NaN),
-      duration: this._getProperty(response, 'cast', Number.NaN),
-      playerState: this._getProperty(response, 'caps', 0)
-    };
-
-    this._nowPlayingService.updateNowPlaying(state);
-  }
-
-  _getProperty(response, prop, defaultValue) {
-    if (response.hasOwnProperty(prop)) {
-      return response[prop];
-    }
-
-    return defaultValue;
   }
 
   _updatePlayerControlService(response) {

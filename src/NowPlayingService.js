@@ -33,7 +33,7 @@ class NowPlayingService {
   }
 
   _resetCharacteristicsToDefaults() {
-    const emptyState = {
+    this._state = {
       track: '',
       album: '',
       artist: '',
@@ -44,35 +44,56 @@ class NowPlayingService {
       playerState: 0
     };
 
-    this.updateNowPlaying(emptyState);
+    this._updateCharacteristics();
   }
 
-  updateNowPlaying(state) {
-    this._mediaDuration = this.duration;
-    this._mediaRemaining = this.remaining;
+  updateNowPlaying(response) {
+    this._state = {
+      track: this._getProperty(response, 'cann', ''),
+      album: this._getProperty(response, 'canl', ''),
+      artist: this._getProperty(response, 'cana', ''),
+      genre: this._getProperty(response, 'cang', ''),
+      mediaType: this._getProperty(response, 'cmmk', 0),
+      remaining: this._getProperty(response, 'cant', Number.NaN),
+      duration: this._getProperty(response, 'cast', Number.NaN),
+      playerState: this._getProperty(response, 'caps', 0)
+    };
+
+    this._updateCharacteristics();
+  }
+
+  _getProperty(response, prop, defaultValue) {
+    if (response.hasOwnProperty(prop)) {
+      return response[prop];
+    }
+
+    return defaultValue;
+  }
+
+  _updateCharacteristics() {
 
     this._service.getCharacteristic(Characteristic.Title)
-      .updateValue(state.track);
+      .updateValue(this._state.track);
 
     this._service.getCharacteristic(Characteristic.Album)
-      .updateValue(state.album);
+      .updateValue(this._state.album);
 
     this._service.getCharacteristic(Characteristic.Artist)
-      .updateValue(state.artist);
+      .updateValue(this._state.artist);
 
     this._service.getCharacteristic(Characteristic.Genre)
-      .updateValue(state.genre);
+      .updateValue(this._state.genre);
 
     this._service.getCharacteristic(Characteristic.MediaType)
-      .updateValue(state.mediaType);
+      .updateValue(this._state.mediaType);
 
     this._updatePosition();
-    this._respectPlayerState(state);
+    this._respectPlayerState();
   }
 
   _updatePosition() {
-    this._setTime(Characteristic.MediaCurrentPosition, (this._mediaDuration - this._mediaRemaining) / 1000);
-    this._setTime(Characteristic.MediaItemDuration, this._mediaDuration / 1000);
+    this._setTime(Characteristic.MediaCurrentPosition, (this._state.duration - this._state.remaining) / 1000);
+    this._setTime(Characteristic.MediaItemDuration, this._state.duration / 1000);
   }
 
   _setTime(characteristic, totalSeconds) {
@@ -88,8 +109,8 @@ class NowPlayingService {
       .updateValue(value);
   }
 
-  _respectPlayerState(state) {
-    if (state.playerState === 4) {
+  _respectPlayerState() {
+    if (this._state.playerState === 4) {
       if (!this._timeout) {
         this._timeout = setTimeout(this._requestPlaybackPosition.bind(this), 1000);
       }
@@ -101,19 +122,20 @@ class NowPlayingService {
   }
 
   _requestPlaybackPosition() {
-    this._dacp.getProperty('dacp.remainingtime')
+    this._dacp.getProperty('dacp.playingtime')
       .then(response => {
-        this.log(JSON.stringify(response));
+        this._timeout = undefined;
 
-        this._timeout = setTimeout(this._requestPlaybackPosition.bind(this), 1000);
+        this._state.remaining = this._getProperty(response, 'cant', Number.NaN);
+        this._state.duration = this._getProperty(response, 'cast', Number.NaN);
+
+        this._updateCharacteristics();
+        this._respectPlayerState();
       })
       .catch(e => {
-        this.log('Failed to retrieve the current playback position. Stopping continuous updates.');
+        this.log(`Failed to retrieve the current playback position. Stopping continuous updates. Error: ${e}`);
 
-        this._mediaDuration = Number.NaN;
-        this._mediaRemaining = Number.NaN;
-
-        this._updatePosition();
+        this._resetCharacteristicsToDefaults();
       });
   }
 };
