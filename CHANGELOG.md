@@ -1,5 +1,12 @@
-
 # Changelog
+
+ ## Version 0.7.0 - 2017-12-17  (planned)
+
+- More reliable reachable status
+
+The reachable status was previously reported when the accessory has seen
+MDNS announcements for the Apple TV or iTunes. This version updates the
+reachable state depending upon the actual network connection state.
 
 ## Version 0.0.6 - 2017-12-10
 

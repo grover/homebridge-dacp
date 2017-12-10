@@ -25,6 +25,7 @@ class DacpAccessory {
     this.version = config.version;
     this.features = config.features || {};
 
+    this._isAnnounced = false;
     this._isReachable = false;
 
     // Maximum backoff is 15mins when a device/program is visible
@@ -106,9 +107,9 @@ class DacpAccessory {
 
     this.log(`The accessory ${this.name} is announced.`);
 
-    this._setReachable(true);
     this._remoteHost = service.host;
     this._remotePort = service.port;
+    this._isAnnounced = true;
 
     // Let backoff trigger the connection
     this._backoff.backoff();
@@ -116,6 +117,8 @@ class DacpAccessory {
 
   accessoryDown() {
     this.log(`The accessory ${this.name} is down.`);
+
+    this._isAnnounced = false;
 
     // Do not attempt to reconnect again
     this._backoff.reset();
@@ -129,8 +132,6 @@ class DacpAccessory {
     this._remoteHost = undefined;
     this._remotePort = undefined;
     this._setReachable(false);
-
-    // this.updateReachability(false);
   }
 
   _schedulePlayStatusUpdate() {
@@ -182,7 +183,7 @@ class DacpAccessory {
   _connectToDacpDevice() {
     // Do not connect if a backoff interval expires and
     // the device has gone down in the mean time.
-    if (!this._isReachable) {
+    if (!this._isAnnounced) {
       return;
     }
 
@@ -204,9 +205,8 @@ class DacpAccessory {
           this.log(`Connected to ${serverInfo.msrv.minm} with session ID ${sessionId}`);
         }
 
+        this._setReachable(true);
         this._schedulePlayStatusUpdate();
-
-        // this.updateReachability(true);
       })
       .catch(e => {
         this.log(`[${this.name}] Retrieving server info from DACP server failed with error ${e}`);
@@ -223,7 +223,7 @@ class DacpAccessory {
   }
 
   _onBackoffStarted(delay) {
-    if (this._isReachable) {
+    if (this._isAnnounced) {
       this.log(`Attempting to reconnect to ${this.name} in ${delay / 1000} seconds.`);
     }
   }
