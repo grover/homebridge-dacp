@@ -55,7 +55,7 @@ class DacpClient extends EventEmitter {
       }
 
       this._revisionNumber = response.cmst.cmsr;
-      return response;
+      return response.cmst;
     }).catch(e => {
       this._setReadyState('failed', e);
       throw e;
@@ -66,6 +66,12 @@ class DacpClient extends EventEmitter {
     return Promise.resolve().then(() => {
       this._assertConnected();
       return this.sendRequest('server-info');
+    }).then(response => {
+      if (!response || !response.msrv) {
+        throw new Error("Missing server info response container");
+      }
+
+      return response.msrv;
     }).catch(e => {
       this._setReadyState('failed', e);
       throw e;

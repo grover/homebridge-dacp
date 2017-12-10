@@ -27,6 +27,7 @@ class DacpAccessory {
 
     this._isAnnounced = false;
     this._isReachable = false;
+    this._playStatusUpdateListeners = [];
 
     // Maximum backoff is 15mins when a device/program is visible
     this._backoff = backoff.exponential({
@@ -87,11 +88,15 @@ class DacpAccessory {
 
   getPlayerControlsService(homebridge) {
     this._playerControlsService = new PlayerControlsService(homebridge, this.log, this.name, this._dacpClient);
+    this._playStatusUpdateListeners.push(this._playerControlsService);
+
     return this._playerControlsService.getService();
   }
 
   getNowPlayingService(homebridge) {
     this._nowPlayingService = new NowPlayingService(homebridge, this.log, this.name, this._dacpClient);
+    this._playStatusUpdateListeners.push(this._nowPlayingService);
+
     return this._nowPlayingService.getService();
   }
 
@@ -137,10 +142,9 @@ class DacpAccessory {
   _schedulePlayStatusUpdate() {
     this._dacpClient.requestPlayStatus()
       .then(response => {
-        if (response.cmst) {
-          this._nowPlayingService.updateNowPlaying(response.cmst);
-          this._updatePlayerControlService(response.cmst);
-        }
+        this._playStatusUpdateListeners.forEach(listener => {
+          listener.update(response);
+        });
       })
       .then(() => {
         if (this._speakerService) {
@@ -155,14 +159,6 @@ class DacpAccessory {
       .catch(e => {
         this.log(`[${this.name}] Retrieving updates from DACP server failed with error ${e}`);
       });
-  }
-
-  _updatePlayerControlService(response) {
-    const state = {
-      playerState: response.caps
-    };
-
-    this._playerControlsService.updatePlayerState(state);
   }
 
   _connectToDacpDevice() {
@@ -186,8 +182,8 @@ class DacpAccessory {
 
     this._dacpClient.getServerInfo()
       .then(serverInfo => {
-        if (serverInfo.msrv && serverInfo.msrv.minm) {
-          this.log(`Connected to ${serverInfo.msrv.minm} with session ID ${sessionId}`);
+        if (serverInfo.minm) {
+          this.log(`Connected to ${serverInfo.minm} with session ID ${sessionId}`);
         }
 
         this._setReachable(true);

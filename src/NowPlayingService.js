@@ -47,7 +47,7 @@ class NowPlayingService {
     this._updateCharacteristics();
   }
 
-  updateNowPlaying(response) {
+  update(response) {
     this._state = {
       track: this._getProperty(response, 'cann', ''),
       album: this._getProperty(response, 'canl', ''),

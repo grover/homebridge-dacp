@@ -30,9 +30,8 @@ class PlayerControlsService {
     return svc;
   }
 
-  updatePlayerState(state) {
-
-    this._isPlaying = state.playerState === 4;
+  update(response) {
+    this._isPlaying = response.caps === 4;
 
     this._service.getCharacteristic(Characteristic.PlayPause)
       .updateValue(this._isPlaying);

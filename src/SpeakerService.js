@@ -92,7 +92,7 @@ class SpeakerService {
   _getMute(callback) {
     this._dacp.getProperty('dmcp.volume')
       .then(response => {
-        this.log("Returning current mute state: v=" + response.cmvo === 0);
+        this.log(`Returning current mute state: v=${response.cmvo === 0}`);
         callback(undefined, response.cmvo === 0);
       })
       .catch(error => {
