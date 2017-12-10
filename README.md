@@ -73,6 +73,7 @@ Features provide the capability to control if specific characteristics will show
 characteristics are supported:
 
 | Feature | Description |
+|---------|-------------|
 | no-volume-control | If true, disables the mute and volume control characteristic provided by the Speaker service. This is most useful for Apple TV, which performs volume control through external devices like a TV or A/V receiver. |
 | no-skip-controls | Disables the track skip controls for the device. |
 
