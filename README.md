@@ -35,6 +35,9 @@ After [Homebridge](https://github.com/nfarina/homebridge) has been installed:
           "name": "Apple TV (Living room)",
           "pairing": "...pairing code...",
           "serviceName": "...service name...",
+          "features": {
+            "volume-control": false
+          }
         },
         {
           "name": "iTunes on iMac",
