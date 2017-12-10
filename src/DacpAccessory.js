@@ -9,14 +9,14 @@ const NowPlayingService = require('./NowPlayingService');
 const PlayerControlsService = require('./PlayerControlsService');
 const SpeakerService = require('./SpeakerService');
 
-let Accessory, Characteristic, Service;
+let Characteristic, Service, Homebridge;
 
 class DacpAccessory {
 
-  constructor(homebridge, log, config, remote) {
-    Accessory = homebridge.Accessory;
-    Characteristic = homebridge.Characteristic;
-    Service = homebridge.Service;
+  constructor(api, log, config, remote) {
+    this.api = api;
+    Characteristic = this.api.hap.Characteristic;
+    Service = this.api.hap.Service;
 
     this.log = log;
     this.name = config.name;
@@ -38,7 +38,7 @@ class DacpAccessory {
       .on('connected', sessionId => this._onDacpConnected(sessionId))
       .on('failed', e => this._onDacpFailure(e));
 
-    this._services = this.createServices(homebridge);
+    this._services = this.createServices(this.api.hap);
   }
 
   getServices() {
@@ -48,6 +48,7 @@ class DacpAccessory {
   createServices(homebridge) {
     return [
       this.getAccessoryInformationService(),
+      this.getBridgingStateService(),
       this.getSpeakerService(homebridge),
       this.getPlayerControlsService(homebridge),
       this.getNowPlayingService(homebridge)
@@ -62,6 +63,16 @@ class DacpAccessory {
       .setCharacteristic(Characteristic.SerialNumber, '42')
       .setCharacteristic(Characteristic.FirmwareRevision, this.version)
       .setCharacteristic(Characteristic.HardwareRevision, this.version);
+  }
+
+  getBridgingStateService() {
+    this._bridgingService = new Service.BridgingState();
+
+    this._bridgingService.getCharacteristic(Characteristic.Reachable)
+      .on('get', this._getReachable.bind(this))
+      .updateValue(this._isReachable);
+
+    return this._bridgingService;
   }
 
   getSpeakerService(homebridge) {
@@ -95,7 +106,7 @@ class DacpAccessory {
 
     this.log(`The accessory ${this.name} is announced.`);
 
-    this._isReachable = true;
+    this._setReachable(true);
     this._remoteHost = service.host;
     this._remotePort = service.port;
 
@@ -117,7 +128,7 @@ class DacpAccessory {
 
     this._remoteHost = undefined;
     this._remotePort = undefined;
-    this._isReachable = false;
+    this._setReachable(false);
 
     // this.updateReachability(false);
   }
@@ -215,6 +226,22 @@ class DacpAccessory {
     if (this._isReachable) {
       this.log(`Attempting to reconnect to ${this.name} in ${delay / 1000} seconds.`);
     }
+  }
+
+  _getReachable(callback) {
+    this.log(`Returning reachability state: ${this._isReachable}`);
+    callback(undefined, this._isReachable);
+  }
+
+  _setReachable(state) {
+    if (this._isReachable === state) {
+      return;
+    }
+
+    this._isReachable = state;
+
+    this._bridgingService.getCharacteristic(Characteristic.Reachable)
+      .updateValue(this._isReachable);
   }
 }
 

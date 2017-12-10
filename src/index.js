@@ -1,4 +1,6 @@
+
 const version = require('../package.json').version;
+
 const DacpAccessory = require('./DacpAccessory');
 const DacpBrowser = require('./dacp/DacpBrowser');
 const DacpRemote = require('./dacp/DacpRemote');
@@ -21,8 +23,9 @@ module.exports = (homebridge) => {
   HOMEBRIDGE.Service = homebridge.hap.Service;
   HOMEBRIDGE.Characteristic = homebridge.hap.Characteristic;
   HOMEBRIDGE.UUIDGen = homebridge.hap.uuid;
+  HOMEBRIDGE.homebridge = homebridge;
 
-  homebridge.registerPlatform(platformName, platformPrettyName, DacpPlatform, true);
+  homebridge.registerPlatform(platformName, platformPrettyName, DacpPlatform, false);
 }
 
 const DacpPlatform = class {
@@ -112,7 +115,7 @@ const DacpPlatform = class {
   accessories(callback) {
     const { devices } = this.config;
 
-    devices.forEach(device => {
+    this._accessories = devices.map(device => {
 
       this.log(`Found accessory in config: "${device.name}"`);
 
@@ -132,10 +135,10 @@ const DacpPlatform = class {
         return;
       }
 
+      device.uuid = HOMEBRIDGE.UUIDGen.generate(platformPrettyName + ":" + device.name);
       device.version = version;
 
-      const accessory = new DacpAccessory(this.api.hap, this.log, device);
-      this._accessories.push(accessory);
+      return new DacpAccessory(this.api, this.log, device);
     });
 
     callback(this._accessories);

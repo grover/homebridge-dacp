@@ -1,11 +1,6 @@
 
 # Changelog
 
-## TODO
-
-- Switch to dynamic platform/accessories
-- Setting accessory as unreachable if Apple TV or iTunes disappears
-
 ## Work in progress - Version 0.0.6 - 2017-12-10
 
 - Implemented exponential backoff to recover broken DACP connections
@@ -15,6 +10,7 @@
 - Added this change log
 - Reworded pairing messages in the log
 - Added decoder for 'mers' and 'merr' DMAP messages
+- Setting accessory as unreachable if Apple TV or iTunes disappears
 
 ## Version 0.0.5 - 2017-12-09
 
