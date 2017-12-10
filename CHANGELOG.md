@@ -1,6 +1,14 @@
 # Changelog
 
-## Version 0.7.0 - 2017-12-17  (planned)
+## Version 0.7.2 - 2017-12-10
+
+- Fixed missing changelog updates
+
+## Version 0.7.1 - 2017-12-10
+
+- Fixed broken formatting in README.md
+
+## Version 0.7.0 - 2017-12-10
 
 - Improved feature documentation
 

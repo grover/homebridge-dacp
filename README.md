@@ -15,6 +15,10 @@ The Speaker service, which provides volume control and mute, can be disabled if 
 required - for example if the Apple TV is connected to an A/V receiver that is integrated
 with HomeKit via a different plugin.
 
+## Changelog
+
+See the [changelog](CHANGELOG.md) for changes between versions of this package.
+
 ## Installation instructions
 
 After [Homebridge](https://github.com/nfarina/homebridge) has been installed:
