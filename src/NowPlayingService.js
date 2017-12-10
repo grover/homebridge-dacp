@@ -17,7 +17,7 @@ class NowPlayingService {
     this._interval = undefined;
     this._trackPosition = 0;
 
-    this._service = this.createService();
+    this.createService();
   }
 
   getService() {
@@ -25,22 +25,27 @@ class NowPlayingService {
   }
 
   createService() {
-    const svc = new Service.NowPlayingService(this.name);
-    return svc;
+    this._service = new Service.NowPlayingService(this.name);
+    this._resetCharacteristicsToDefaults();
   }
 
   accessoryDown() {
+    this._resetCharacteristicsToDefaults();
+  }
+
+  _resetCharacteristicsToDefaults() {
     const emptyState = {
       track: '',
       album: '',
       artist: '',
       genre: '',
       type: -1,
-      position: 0,
-      duration: 0,
+      position: Number.NaN,
+      duration: Number.NaN,
       playerState: 0
     };
-    updateNowPlaying(emptyState);
+
+    this.updateNowPlaying(emptyState);
   }
 
   updateNowPlaying(state) {

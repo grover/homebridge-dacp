@@ -8,6 +8,11 @@ The reachable status was previously reported when the accessory has seen
 MDNS announcements for the Apple TV or iTunes. This version updates the
 reachable state depending upon the actual network connection state.
 
+- Now Playing Service shows all characteristics immediately
+
+If nothing was playing most of the characteristics were missing from the now
+playing service as they were optional.
+
 ## Version 0.0.6 - 2017-12-10
 
 - Implemented exponential backoff to recover broken DACP connections
