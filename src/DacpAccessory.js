@@ -5,6 +5,7 @@ const backoff = require('backoff');
 
 const DacpClient = require('./dacp/DacpClient');
 
+const MediaSkippingService = require('./MediaSkippingService');
 const NowPlayingService = require('./NowPlayingService');
 const PlayerControlsService = require('./PlayerControlsService');
 const SpeakerService = require('./SpeakerService');
@@ -53,7 +54,8 @@ class DacpAccessory {
       this.getBridgingStateService(),
       this.getSpeakerService(homebridge),
       this.getPlayerControlsService(homebridge),
-      this.getNowPlayingService(homebridge)
+      this.getNowPlayingService(homebridge),
+      this.getMediaSkippingService(homebridge)
     ].filter(m => m != null);
   }
 
@@ -78,7 +80,7 @@ class DacpAccessory {
   }
 
   getSpeakerService(homebridge) {
-    if (this.features && this.features['volume-control'] === false) {
+    if (this.features && this.features['no-volume-controls'] === true) {
       return;
     }
 
@@ -98,6 +100,15 @@ class DacpAccessory {
     this._playStatusUpdateListeners.push(this._nowPlayingService);
 
     return this._nowPlayingService.getService();
+  }
+
+  getMediaSkippingService(homebridge) {
+    if (this.features && this.features['no-skip-controls'] === true) {
+      return;
+    }
+
+    this._mediaSkippingService = new MediaSkippingService(homebridge, this.log, this.name, this._dacpClient);
+    return this._mediaSkippingService.getService();
   }
 
   identify(callback) {

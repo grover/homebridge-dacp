@@ -37,13 +37,16 @@ After [Homebridge](https://github.com/nfarina/homebridge) has been installed:
           "pairing": "...pairing code...",
           "serviceName": "...service name...",
           "features": {
-            "volume-control": false
+            "no-volume-controls": true
           }
         },
         {
           "name": "iTunes on iMac",
           "pairing": "...pairing code...",
           "serviceName": "...service name..."
+          "features": {
+            "no-skip-controls": true
+          }
         }
       ]
     }
@@ -57,13 +60,23 @@ You may choose to create multiple remote controls: One per device/program that y
 
 The plugin is configured with the following configuration:
 
-| Attributes | Usage |
+| Attributes | Description |
 |------------|-------|
 | name | The name of the accessory and remote control to create for this device. |
 | pairing | The pairing code for the device, which is created during the pairing process. |
 | serviceName | The service name obtained during the pairing process. |
 | features | An object that enables you to restrict the services created for this accessory. |
-| no-volume-control | Disables the Speaker service for Apple TVs, which perform volume control through external devices like a TV or A/V receiver. |
+
+## Features
+
+Features provide the capability to control if specific characteristics will show up for a device. The following
+characteristics are supported:
+
+| Feature | Description |
+| no-volume-control | If true, disables the mute and volume control characteristic provided by the Speaker service. This is most useful for Apple TV, which performs volume control through external devices like a TV or A/V receiver. |
+| no-skip-controls | Disables the track skip controls for the device. |
+
+All features are boolean true/false switches.
 
 ## Accessory Services
 
@@ -72,19 +85,35 @@ Each device will expose multiple services:
 * Accessory Information Service
 * Speaker Service
 * [Player Controls Service](src/hap/PlayerControlsTypes.js)
+* [Media Skipping Service](src/hap/MediaSkippingTypes.js)
 * [Now Playing Service](src/hap/NowPlayingTypes.js)
 
 ### Player Controls Service
 
-This service provides status information about the currently playing media. This contains
+Service ID: `EFD51587-6F54-4093-9E8D-FA3975DCDCE6`
+
+This service provides a play/pause control for the device. This contains
 the following fields:
 
 | Characteristic | UUID | Type | Permissions | Description |
 |----------------|------|------|-------------|-------------|
 | PlayPause | `BA16B86C-DC86-482A-A70C-CC9C924DB842` | Boolean | Read, Write, Notify | Represents the playback state of the device/iTunes. |
 
+### Media Skipping Service
+
+Service ID: `07163D16-8F0E-4B36-9AC4-18BE183B9EDE`
+
+This service provides skip forward/backward controls for the device. This contains
+the following fields:
+
+| Characteristic | UUID | Type | Permissions | Description |
+|----------------|------|------|-------------|-------------|
+| SkipForward | `CD56B40B-F98B-4ACA-BF5E-4AD4E9C77D1C` | Boolean | Read, Write, Notify | Skips forward to the next track. Automatically resets to false after the skip operation has completed. |
+| SkipBackward | `CFFE477D-70C8-4630-B33B-25073F137191` | Boolean | Read, Write, Notify | Skips backward to the previous track. Automatically resets to false after the skip operation has completed. |
 
 ### Now Playing Service
+
+Service ID: `F7138C87-EABF-420A-BFF0-76FC04DD81CD`
 
 This service provides status information about the currently playing media. This contains
 the following fields:

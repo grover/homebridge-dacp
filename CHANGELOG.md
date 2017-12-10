@@ -1,6 +1,20 @@
 # Changelog
 
- ## Version 0.7.0 - 2017-12-17  (planned)
+## Version 0.7.0 - 2017-12-17  (planned)
+
+- Improved feature documentation
+
+The [README.md](README.md) has an updated documentation of the features.
+
+- Renamed feature toggles
+
+By default all features are available for all devices. Use feature toggles to
+disable specific services.
+
+For consistency reasons the feature toggles have been changed to represent a
+disabled state. The naming has been changed accordingly. Where you'd previously
+write `volume-control` you'd now write `no-volume-controls`. See the README.md
+for an example.
 
 - More reliable reachable status
 
@@ -23,6 +37,13 @@ updates the characteristic in response to reports from iTunes or Apple TV.
 
 If nothing was playing most of the characteristics were missing from the now
 playing service as they were optional.
+
+- Added media skipping service
+
+The service provides two additional controls to skip forward and backward to
+the next or previous track respectively. The service is enabled by default for
+all accessory and can be disabled for each accessory individually using a
+feature togggle.
 
 ## Version 0.0.6 - 2017-12-10
 

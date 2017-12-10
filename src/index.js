@@ -5,6 +5,7 @@ const DacpAccessory = require('./DacpAccessory');
 const DacpBrowser = require('./dacp/DacpBrowser');
 const DacpRemote = require('./dacp/DacpRemote');
 
+const MediaSkippingTypes = require('./hap/MediaSkippingTypes');
 const NowPlayingTypes = require('./hap/NowPlayingTypes');
 const PlayerControlTypes = require('./hap/PlayerControlsTypes');
 
@@ -47,6 +48,7 @@ const DacpPlatform = class {
 
     this.api.on('didFinishLaunching', this._didFinishLaunching.bind(this));
 
+    MediaSkippingTypes.registerWith(api.hap);
     NowPlayingTypes.registerWith(api.hap);
     PlayerControlTypes.registerWith(api.hap);
   }
