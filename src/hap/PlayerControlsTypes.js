@@ -9,7 +9,7 @@ module.exports = {
     const Service = hap.Service;
 
     ////////////////////////////////////////////////////////////////////////////
-    // Duration Characteristic
+    // PlayPause Characteristic
     ////////////////////////////////////////////////////////////////////////////
     Characteristic.PlayPause = function () {
       Characteristic.call(this, 'Play', Characteristic.PlayPause.UUID);
@@ -23,7 +23,7 @@ module.exports = {
     inherits(Characteristic.PlayPause, Characteristic);
 
     ////////////////////////////////////////////////////////////////////////////
-    // Now Playing Service
+    // PlayerControlsService Service
     ////////////////////////////////////////////////////////////////////////////
     Service.PlayerControlsService = function (displayName, subtype) {
       Service.call(this, displayName, Service.PlayerControlsService.UUID, subtype);
