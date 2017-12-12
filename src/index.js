@@ -141,7 +141,7 @@ const DacpPlatform = class {
       device.version = version;
 
       return new DacpAccessory(this.api, this.log, device);
-    });
+    }).filter(a => a !== undefined);
 
     callback(this._accessories);
   }

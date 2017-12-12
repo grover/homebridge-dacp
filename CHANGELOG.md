@@ -1,20 +1,27 @@
 # Changelog
 
+## Version 0.7.3 - 2017-12-12
+
+#### Bugfixes
+
+- Fixed start issue `TypeError: Cannot read property 'name' of undefined`
+- Fixed issue retrieving playback position from Apple TV causing needless reconnects
+
 ## Version 0.7.2 - 2017-12-10
 
-- Fixed missing changelog updates
+Fixed missing changelog updates
 
 ## Version 0.7.1 - 2017-12-10
 
-- Fixed broken formatting in README.md
+Fixed broken formatting in [README.md](README.md)
 
 ## Version 0.7.0 - 2017-12-10
 
-- Improved feature documentation
+#### Improved feature documentation
 
 The [README.md](README.md) has an updated documentation of the features.
 
-- Renamed feature toggles
+#### Renamed feature toggles
 
 By default all features are available for all devices. Use feature toggles to
 disable specific services.
@@ -24,29 +31,29 @@ disabled state. The naming has been changed accordingly. Where you'd previously
 write `volume-control` you'd now write `no-volume-controls`. See the README.md
 for an example.
 
-- More reliable reachable status
+#### More reliable reachable status
 
 The reachable status was previously reported when the accessory has seen
 MDNS announcements for the Apple TV or iTunes. This version updates the
 reachable state depending upon the actual network connection state.
 
-- Made zero the default media type value in the NowPlayingService
+#### Made zero the default media type value in the NowPlayingService
 
 This aligns the value with reports from Apple TV, when playing media from apps.
 The reported media type is zero in those cases.
 
-- Report actual playback position via getproperty calls instead of guessing
+#### Report actual playback position via getproperty calls instead of guessing
 
 Previous version tried to guess the playback position by essentially counting
 the seconds. This version periodically acquires the actual playback position and
 updates the characteristic in response to reports from iTunes or Apple TV.
 
-- Now Playing Service shows all characteristics immediately
+#### Now Playing Service shows all characteristics immediately
 
 If nothing was playing most of the characteristics were missing from the now
 playing service as they were optional.
 
-- Added media skipping service
+#### Added media skipping service
 
 The service provides two additional controls to skip forward and backward to
 the next or previous track respectively. The service is enabled by default for

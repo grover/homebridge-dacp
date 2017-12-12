@@ -84,11 +84,11 @@ class DacpClient extends EventEmitter {
       this._assertConnected();
       return this.sendRequest('ctrl-int/1/getproperty', { 'properties': prop });
     }).then(response => {
-      if (!response || !response.cmgt) {
+      if (!response || !(response.cmgt || response.cmst)) {
         throw new Error("Missing get property response container");
       }
 
-      return response.cmgt;
+      return response.cmgt || response.cmst;
     }).catch(e => {
       this._setReadyState('failed', e);
       throw e;
