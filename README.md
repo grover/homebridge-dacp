@@ -45,6 +45,15 @@ After [Homebridge](https://github.com/nfarina/homebridge) has been installed:
           }
         },
         {
+          "name": "Apple TV (Bedroom)",
+          "pairing": "...pairing code...",
+          "serviceName": "...service name...",
+          "features": {
+            "no-volume-controls": true,
+            "alternate-playpause-switch": true
+          }
+        },
+        {
           "name": "iTunes on iMac",
           "pairing": "...pairing code...",
           "serviceName": "...service name..."
@@ -78,6 +87,7 @@ characteristics are supported:
 
 | Feature | Description |
 |---------|-------------|
+| alternate-playpause-switch | Changes the Play/Pause controls to use a native HomeKit Switch service, which enables the Apple Home app to make use of it. |
 | no-volume-control | If true, disables the mute and volume control characteristic provided by the Speaker service. This is most useful for Apple TV, which performs volume control through external devices like a TV or A/V receiver. |
 | no-skip-controls | Disables the track skip controls for the device. |
 

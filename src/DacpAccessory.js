@@ -89,7 +89,15 @@ class DacpAccessory {
   }
 
   getPlayerControlsService(homebridge) {
-    this._playerControlsService = new PlayerControlsService(homebridge, this.log, this.name, this._dacpClient);
+    let service = Service.PlayerControlsService;
+    let characteristic = Characteristic.PlayPause;
+
+    if (this.features && this.features['alternate-playpause-switch'] === true) {
+      service = Service.Switch;
+      characteristic = Characteristic.On;
+    }
+
+    this._playerControlsService = new PlayerControlsService(homebridge, this.log, this.name, this._dacpClient, service, characteristic);
     this._playStatusUpdateListeners.push(this._playerControlsService);
 
     return this._playerControlsService.getService();
@@ -117,7 +125,7 @@ class DacpAccessory {
   }
 
   accessoryUp(service) {
-    if (this._isReachable) {
+    if (this._isAnnounced) {
       return;
     }
 

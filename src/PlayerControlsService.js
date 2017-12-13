@@ -4,7 +4,7 @@ let Accessory, Characteristic, Service;
 
 class PlayerControlsService {
 
-  constructor(homebridge, log, name, dacp) {
+  constructor(homebridge, log, name, dacp, serviceCtor, characteristicCtor) {
     Accessory = homebridge.Accessory;
     Characteristic = homebridge.Characteristic;
     Service = homebridge.Service;
@@ -12,6 +12,8 @@ class PlayerControlsService {
     this.log = log;
     this.name = name;
     this._dacp = dacp;
+    this._serviceCtor = serviceCtor;
+    this._characteristicCtor = characteristicCtor;
 
     this._service = this.createService();
   }
@@ -21,9 +23,9 @@ class PlayerControlsService {
   }
 
   createService() {
-    const svc = new Service.PlayerControlsService(this.name);
+    const svc = new this._serviceCtor(this.name);
 
-    svc.getCharacteristic(Characteristic.PlayPause)
+    svc.getCharacteristic(this._characteristicCtor)
       .on('get', this._getPlayState.bind(this))
       .on('set', this._setPlayState.bind(this));
 
@@ -33,7 +35,7 @@ class PlayerControlsService {
   update(response) {
     this._isPlaying = response.caps === 4;
 
-    this._service.getCharacteristic(Characteristic.PlayPause)
+    this._service.getCharacteristic(this._characteristicCtor)
       .updateValue(this._isPlaying);
   }
 

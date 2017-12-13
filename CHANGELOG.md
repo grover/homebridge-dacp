@@ -1,5 +1,18 @@
 # Changelog
 
+## Version 0.7.4 - 2017-12-13
+
+#### Bugfixes
+
+- Bugfix for #4: IllegalStateError: Backoff in progress.
+
+#### Alternate Play/Pause switch mode
+
+iOS' Home app is unfortunately incompatible with custom services and 
+characteristics. As such this plugin was not working for users of the Home app until
+now. This version adds a configuration setting to change the mode that the 
+play/pause button is published to enable Home to use it like a power switch.
+
 ## Version 0.7.3 - 2017-12-12
 
 #### Bugfixes
