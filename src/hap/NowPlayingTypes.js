@@ -71,6 +71,8 @@ module.exports = {
       Characteristic.call(this, 'Media Type', Characteristic.MediaType.UUID);
       this.setProps({
         format: Characteristic.Formats.INT,
+        maxValue: 64,
+        minValue: 0,
         perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
       });
       this.value = this.getDefaultValue();
