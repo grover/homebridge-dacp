@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.7.5 - 2017-12-27
+
+#### Bugfixes
+
+- Fix #6 (by @nitaybz): Limit the range of the media type characteristic to make rule creation easier.
+
 ## Version 0.7.4 - 2017-12-13
 
 #### Bugfixes
