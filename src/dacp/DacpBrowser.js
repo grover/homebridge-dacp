@@ -14,9 +14,16 @@ class DacpBrowser extends EventEmitter {
   start() {
     this.log('Starting DACP browser...');
 
+    const ServiceName = 'touch-able';
+    const ResolverSequence = [
+      mdns.rst.DNSServiceResolve(),
+      'DNSServiceGetAddrInfo' in mdns.dns_sd ? mdns.rst.DNSServiceGetAddrInfo() : mdns.rst.getaddrinfo({ families: [0] }),
+      mdns.rst.makeAddressesUnique()
+    ];
+
     this._browser = mdns.createBrowser(
-      mdns.tcp(this._serviceName),
-      { resolverSequence: this._resolverSequence });
+      mdns.tcp(ServiceName),
+      { resolverSequence: ResolverSequence });
 
     this._browser.on('serviceUp', service => {
       this.emit('serviceUp', service);
@@ -42,13 +49,5 @@ class DacpBrowser extends EventEmitter {
     }
   }
 };
-
-DacpBrowser.prototype._serviceName = 'touch-able';
-
-DacpBrowser.prototype._resolverSequence = [
-  mdns.rst.DNSServiceResolve(),
-  'DNSServiceGetAddrInfo' in mdns.dns_sd ? mdns.rst.DNSServiceGetAddrInfo() : mdns.rst.getaddrinfo({ families: [4] }),
-  mdns.rst.makeAddressesUnique()
-];
 
 module.exports = DacpBrowser;
