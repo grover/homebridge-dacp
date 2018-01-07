@@ -44,19 +44,19 @@ class PlayerControlsService {
     callback(undefined, this._isPlaying);
   }
 
-  _setPlayState(isPlaying, callback) {
+  async _setPlayState(isPlaying, callback) {
     this.log(`Setting current playback state: ${isPlaying ? 'playing' : 'paused'}`);
 
     this._isPlaying = isPlaying;
-    this._dacp.sendRequest('ctrl-int/1/playpause')
-      .then(response => {
-        this.log('Playback status update done.');
-        callback();
-      })
-      .catch(error => {
-        this.log('Failed to send the playback request to the device.');
-        callback();
-      });
+    try {
+      const response = await this._dacp.play();
+      this.log('Playback status update done.');
+      callback();
+    }
+    catch (error) {
+      this.log('Failed to send the playback request to the device.');
+      callback();
+    }
   }
 };
 

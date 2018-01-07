@@ -1,54 +1,48 @@
 "use strict";
 
 const EventEmitter = require('events').EventEmitter;
-const request = require('request');
-const daap = require('../daap/Decoder');
+const util = require('util');
+
+const DacpConnection = require('./DacpConnection');
 
 class DacpClient extends EventEmitter {
 
-  constructor(log) {
+  constructor(log, settings) {
     super();
 
     this.log = log;
+    this._settings = settings;
 
-    /**
-     * 'disconnected': Disconnected
-     * 'authenticating': Connecting to the DACP server
-     * 'connected': Connected to the DACP server
-     */
-    this._state = 'disconnected';
+    // Pool of connections to actually use
+    this._connections = {};
   }
 
-  async login(options) {
-    if (this._state !== 'disconnected') {
-      throw new Error('Can\'t login on an already active client.');
+  async connect(settings) {
+    if (!!this._settings) {
+      throw new Error('Can\'t connect an already active client.');
     }
+    this._settings = settings;
 
-    this._setReadyState('authenticating', options);
-    this._host = options.host;
+    return await this._withConnection(this.STATUS_CONNECTION, async (connection) => {
+      const serverInfo = await connection.sendRequest('server-info');
+      if (!serverInfo || !serverInfo.msrv) {
+        throw new Error("Missing server info response container");
+      }
 
-    return this.sendRequest('login', { 'pairing-guid': '0x' + options.pairing })
-      .then(response => {
-        if (response.mlog && response.mlog.mlid) {
-          this._sessionId = response.mlog.mlid;
-
-          this._revisionNumber = 1;
-          this._setReadyState('connected', this._sessionId);
-        }
-        else {
-          this._setReadyState('failed', 'Missing session ID in authentication response.');
-        }
-      });
+      this.emit('connected');
+      return serverInfo.msrv;
+    });
   }
 
   async requestPlayStatus() {
     const self = this;
 
-    return Promise.resolve().then(() => {
-      this._assertConnected();
-      return this.sendRequest('ctrl-int/1/playstatusupdate', { 'revision-number': this._revisionNumber });
-    }).then(response => {
-      if (!response.hasOwnProperty('cmst') || !response.cmst.hasOwnProperty('cmsr')) {
+    return await this._withConnection(this.STATUS_CONNECTION, async (connection) => {
+      const response = await connection.sendRequest(
+        'ctrl-int/1/playstatusupdate',
+        { 'revision-number': this._revisionNumber });
+
+      if (response.cmst === undefined || response.cmst.cmsr === undefined) {
         const e = new Error('Missing revision number in play status update response');
         e.response = response;
         throw e;
@@ -56,127 +50,93 @@ class DacpClient extends EventEmitter {
 
       this._revisionNumber = response.cmst.cmsr;
       return response.cmst;
-    }).catch(e => {
-      this._setReadyState('failed', e);
-      throw e;
     });
-  }
-
-  async getServerInfo() {
-    return Promise.resolve().then(() => {
-      this._assertConnected();
-      return this.sendRequest('server-info');
-    }).then(response => {
-      if (!response || !response.msrv) {
-        throw new Error("Missing server info response container");
-      }
-
-      return response.msrv;
-    }).catch(e => {
-      this._setReadyState('failed', e);
-      throw e;
-    });
-
   }
 
   async getProperty(prop) {
-    return Promise.resolve().then(() => {
-      this._assertConnected();
-      return this.sendRequest('ctrl-int/1/getproperty', { 'properties': prop });
-    }).then(response => {
+    return await this._withConnection(this.CONTROL_CONNECTION, async (connection) => {
+      const response = await connection.sendRequest(
+        'ctrl-int/1/getproperty',
+        { 'properties': prop });
+
       if (!response || !(response.cmgt || response.cmst)) {
         throw new Error("Missing get property response container");
       }
 
       return response.cmgt || response.cmst;
-    }).catch(e => {
-      this._setReadyState('failed', e);
-      throw e;
     });
   }
 
   async setProperty(prop, value) {
-    return Promise.resolve().then(() => {
-      this._assertConnected();
-
+    return await this._withConnection(this.CONTROL_CONNECTION, async (connection) => {
       const data = {};
       data[prop] = value;
-      return this.sendRequest('ctrl-int/1/setproperty', data);
-    }).catch(e => {
-      this._setReadyState('failed', e);
-      throw e;
+      return connection.sendRequest('ctrl-int/1/setproperty', data);
     });
   }
 
-  async sendRequest(relativeUri, data) {
+  async play() {
+    return await this._withConnection(this.CONTROL_CONNECTION, async (connection) => {
+      return connection.sendRequest('ctrl-int/1/playpause');
+    });
+  }
 
-    return new Promise((resolve, reject) => {
+  async nextTrack() {
+    return await this._withConnection(this.CONTROL_CONNECTION, async (connection) => {
+      return connection.sendRequest('ctrl-int/1/nextitem');
+    });
+  }
 
-      const uri = `http://${this._host}/${relativeUri}`;
-      data = data || {};
+  async prevTrack() {
+    return await this._withConnection(this.CONTROL_CONNECTION, async (connection) => {
+      return connection.sendRequest('ctrl-int/1/previtem');
+    });
+  }
 
-      if (this._sessionId) {
-        data['session-id'] = this._sessionId;
+  async _withConnection(type, action) {
+    try {
+      let c = this._connections[type];
+      if (!c) {
+        this.log(`Creating ${type} connection to ${this._settings.host}`);
+        c = await this._createConnection(type);
+        this._connections[type] = c;
+        c.on('failed', this._onConnectionFailed.bind(this, type));
       }
 
-      var options = {
-        encoding: null,
-        url: `http://${this._host}/${relativeUri}`,
-        qs: data,
-        headers: {
-          'Viewer-Only-Client': '1'
-        }
-      };
+      return await action(c);
+    }
+    catch (e) {
+      this._reset();
 
-      // this.log(`Request ${JSON.stringify(options)}`);
-      request(options, (error, response) => {
-        // this.log(`Done ${JSON.stringify(options)}`);
-        if (error || (response && response.statusCode >= 300)) {
-          const e = {
-            error: error,
-            response: response,
-            options: options
-          };
+      this.emit('failed', e);
+      throw e;
+    }
+  }
 
-          reject(e);
-          return;
-        }
+  async _createConnection(type) {
+    const c = new DacpConnection(this._settings.host, this._settings.pairing);
+    this._sessionId = await c.connect(this._sessionId);
+    return c;
+  }
 
-        try {
-          response = daap.decode(response.body);
-        }
-        catch (e) {
-          this.emit('failed', error);
-          reject(e);
-          return;
-        }
+  _onConnectionFailed(type, error) {
+    this.log(`Connection ${type} failed with error ${util.inspect(error)}`);
+    this._reset();
 
-        resolve(response);
-      });
+    this.emit('failed', error);
+  }
+
+  _reset() {
+    this._connections.forEach(connection => {
+      connection.close();
     });
-  }
-
-  _assertConnected() {
-    if (this._readyState !== 'connected') {
-      throw new Error('Can\'t send requests to disconnected DACP servers.');
-    }
-  }
-
-  _setReadyState(readyState) {
-    if (readyState === 'failed') {
-      this._sessionId = undefined;
-      this._revisionNumber = 1;
-    }
-
-    if (readyState === this._readyState) {
-      return;
-    }
-
-    this._readyState = readyState;
-
-    const args = Array.from(arguments).slice(1);
-    this.emit(readyState, ...args);
+    this._connections = {};
+    this._settings = undefined;
+    this._sessionId = undefined;
   }
 };
+
+DacpClient.prototype.STATUS_CONNECTION = 'status';
+DacpClient.prototype.CONTROL_CONNECTION = 'properties';
 
 module.exports = DacpClient;

@@ -3,6 +3,7 @@
 let Accessory, Characteristic, Service;
 
 const moment = require('moment');
+const util = require('util');
 
 class NowPlayingService {
 
@@ -121,22 +122,21 @@ class NowPlayingService {
     }
   }
 
-  _requestPlaybackPosition() {
-    this._dacp.getProperty('dacp.playingtime')
-      .then(response => {
-        this._timeout = undefined;
+  async _requestPlaybackPosition() {
+    try {
+      const response = await this._dacp.getProperty('dacp.playingtime')
+      this._timeout = undefined;
 
-        this._state.remaining = this._getProperty(response, 'cant', Number.NaN);
-        this._state.duration = this._getProperty(response, 'cast', Number.NaN);
+      this._state.remaining = this._getProperty(response, 'cant', Number.NaN);
+      this._state.duration = this._getProperty(response, 'cast', Number.NaN);
 
-        this._updateCharacteristics();
-        this._respectPlayerState();
-      })
-      .catch(e => {
-        this.log(`Failed to retrieve the current playback position. Stopping continuous updates. Error: ${e}`);
-
-        this._resetCharacteristicsToDefaults();
-      });
+      this._updateCharacteristics();
+      this._respectPlayerState();
+    }
+    catch (e) {
+      this.log(`Failed to retrieve the current playback position. Stopping continuous updates. Error: ${util.inspect(e)}`);
+      this._resetCharacteristicsToDefaults();
+    }
   }
 };
 

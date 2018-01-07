@@ -1,5 +1,7 @@
 "use strict";
 
+const util = require('util');
+
 let Accessory, Characteristic, Service;
 
 class SpeakerService {
@@ -29,25 +31,27 @@ class SpeakerService {
 
     speakerService.getCharacteristic(Characteristic.Volume)
       .on('get', this._getVolume.bind(this))
-      .on('set', this._setVolume.bind(this));
+      .on('set', this._setVolume.bind(this))
+      .updateValue(this._volume, undefined, undefined);
 
     speakerService.getCharacteristic(Characteristic.Mute)
       .on('get', this._getMute.bind(this))
-      .on('set', this._setMute.bind(this));
+      .on('set', this._setMute.bind(this))
+      .updateValue(this._volume === 0, undefined, undefined);
 
     return speakerService;
   }
 
-  update() {
-    return this._dacp.getProperty('dmcp.volume')
-      .then(response => {
-        if (response && response.cmvo !== undefined) {
-          this._updateSpeakerCharacteristics(response.cmvo);
-        }
-      })
-      .catch(error => {
-        this.log('Failed to retrieve speaker volume ' + error);
-      });
+  async update() {
+    try {
+      const response = await this._dacp.getProperty('dmcp.volume');
+      if (response && response.cmvo !== undefined) {
+        this._updateSpeakerCharacteristics(response.cmvo);
+      }
+    }
+    catch (error) {
+      this.log(`Failed to retrieve speaker volume ${util.inspect(error)}`);
+    }
   }
 
   _updateSpeakerCharacteristics(volume) {
@@ -64,40 +68,42 @@ class SpeakerService {
     }
   }
 
-  _getVolume(callback) {
-    this._dacp.getProperty('dmcp.volume')
-      .then(response => {
-        this.log("Returning current volume: v=" + response.cmvo);
-        callback(undefined, response.cmvo);
-        this._volume = response.cmvo;
-      })
-      .catch(error => {
-        callback(error, undefined);
-      });
+  async _getVolume(callback) {
+    try {
+      const response = await this._dacp.getProperty('dmcp.volume')
+      response.cmvo = response.cmvo || 0;
+      this.log("Returning current volume: v=" + response.cmvo);
+      callback(undefined, response.cmvo);
+      this._volume = response.cmvo;
+    }
+    catch (error) {
+      callback(error, undefined);
+    }
   }
 
-  _setVolume(volume, callback) {
+  async _setVolume(volume, callback) {
     this.log("Setting current volume to v=" + volume);
 
-    this._dacp.setProperty('dmcp.volume', volume)
-      .then(() => {
-        callback();
-        this._updateSpeakerCharacteristics(volume);
-      })
-      .catch(error => {
-        callback(error);
-      });
+    try {
+      await this._dacp.setProperty('dmcp.volume', volume)
+      callback();
+      this._updateSpeakerCharacteristics(volume);
+    }
+    catch (error) {
+      callback(error);
+    }
   }
 
-  _getMute(callback) {
-    this._dacp.getProperty('dmcp.volume')
-      .then(response => {
-        this.log(`Returning current mute state: v=${response.cmvo === 0}`);
-        callback(undefined, response.cmvo === 0);
-      })
-      .catch(error => {
-        callback(error, undefined);
-      });
+  async _getMute(callback) {
+    try {
+      const response = await this._dacp.getProperty('dmcp.volume');
+      response.cmvo = response.cmvo || 0;
+      this.log(`Returning current mute state: v=${response.cmvo === 0}`);
+      callback(undefined, response.cmvo === 0);
+    }
+    catch (error) {
+      callback(error, undefined);
+    }
   }
 
   _setMute(muted, callback) {

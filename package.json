@@ -16,7 +16,8 @@
     "backoff": "^2.5.0",
     "mdns": "^2.3.4",
     "moment": "^2.19.3",
-    "request": "^2.83.0"
+    "request": "^2.83.0",
+    "sequential-task-queue": "^1.2.0"
   },
   "keywords": [
     "homebridge",

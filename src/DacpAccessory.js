@@ -38,7 +38,6 @@ class DacpAccessory {
       .on('ready', () => this._connectToDacpDevice());
 
     this._dacpClient = new DacpClient(log)
-      .on('connected', sessionId => this._onDacpConnected(sessionId))
       .on('failed', e => this._onDacpFailure(e));
 
     this._services = this.createServices(this.api.hap);
@@ -52,11 +51,16 @@ class DacpAccessory {
     return [
       this.getAccessoryInformationService(),
       this.getBridgingStateService(),
-      this.getSpeakerService(homebridge),
       this.getPlayerControlsService(homebridge),
+      this.getSpeakerService(homebridge),
       this.getNowPlayingService(homebridge),
       this.getMediaSkippingService(homebridge)
     ].filter(m => m != null);
+
+    this._playerControlsService.isPrimaryService = true;
+    this._playerControlsService.addLinkedService(this._mediaSkippingService);
+    this._playerControlsService.addLinkedService(this._speakerService);
+    this._playerControlsService.addLinkedService(this._nowPlayingService);
   }
 
   getAccessoryInformationService() {
@@ -176,7 +180,7 @@ class DacpAccessory {
         this._schedulePlayStatusUpdate();
       })
       .catch(e => {
-        this.log(`[${this.name}] Retrieving updates from DACP server failed with error ${e}`);
+        this.log(`[${this.name}] Retrieving updates from DACP server failed with error ${JSON.stringify(e)}`);
       });
   }
 
@@ -187,29 +191,26 @@ class DacpAccessory {
       return;
     }
 
-    this.log(`Connecting to ${this._remoteHost}:${this._remotePort} for ${this.name}`);
-    this._dacpClient.login({ host: `${this._remoteHost}:${this._remotePort}`, pairing: this.pairing })
-      .catch(error => {
-        this.log(`[${this.name}] Connection to DACP server failed: ${error}`);
+    const settings = {
+      host: `${this._remoteHost}:${this._remotePort}`,
+      pairing: this.pairing
+    };
 
-        this._backoff.backoff();
-      });
-  }
-
-  _onDacpConnected(sessionId) {
-    this._backoff.reset();
-
-    this._dacpClient.getServerInfo()
+    this.log(`Connecting to ${this.name} (${this._remoteHost}:${this._remotePort})`);
+    this._dacpClient.connect(settings)
       .then(serverInfo => {
         if (serverInfo.minm) {
-          this.log(`Connected to ${serverInfo.minm} with session ID ${sessionId}`);
+          this.log(`Connected to ${serverInfo.minm}`);
         }
+        this._backoff.reset();
 
         this._setReachable(true);
         this._schedulePlayStatusUpdate();
       })
-      .catch(e => {
-        this.log(`[${this.name}] Retrieving server info from DACP server failed with error ${e}`);
+      .catch(error => {
+        this.log(`[${this.name}] Connection to DACP server failed: ${JSON.stringify(error)}`);
+
+        this._backoff.backoff();
       });
   }
 

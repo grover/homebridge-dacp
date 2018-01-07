@@ -38,21 +38,21 @@ class MediaSkippingService {
 
     this.log(`Skipping forward.`);
 
-    this._dacp.sendRequest('ctrl-int/1/nextitem')
-      .then(response => {
-        this.log('Skipped to the next item.');
-        callback();
-      })
-      .catch(error => {
-        this.log('Failed to send the playback request to the device.');
-        callback();
-      })
-      .then(() => {
-        this._resetCharacteristics();
-      });
+    try {
+      this._dacp.nextTrack();
+      this.log('Skipped to the next item.');
+      callback();
+    }
+    catch (error) {
+      this.log('Failed to send the playback request to the device.');
+      // TODO: Pass error back to HomeKit
+      callback();
+    }
+
+    this._resetCharacteristics();
   }
 
-  _triggerSkipBackward(skip, callback) {
+  async _triggerSkipBackward(skip, callback) {
     if (!skip) {
       callback();
       return;
@@ -60,18 +60,18 @@ class MediaSkippingService {
 
     this.log(`Skipping backward.`);
 
-    this._dacp.sendRequest('ctrl-int/1/previtem')
-      .then(response => {
-        this.log('Skippped to the previous item.');
-        callback();
-      })
-      .catch(error => {
-        this.log('Failed to send the playback request to the device.');
-        callback();
-      })
-      .then(() => {
-        this._resetCharacteristics();
-      });
+    try {
+      await this._dacp.prevTrack();
+      this.log('Skippped to the previous item.');
+      callback();
+    }
+    catch (error) {
+      this.log('Failed to send the playback request to the device.');
+      // TODO: Pass error back to HomeKit
+      callback();
+    }
+
+    this._resetCharacteristics();
   }
 
   _resetCharacteristics() {
