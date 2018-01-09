@@ -157,6 +157,7 @@ class DacpAccessory {
       }
     });
 
+    this._dacpClient.disconnect();
     this._remoteHost = undefined;
     this._remotePort = undefined;
     this._setReachable(false);

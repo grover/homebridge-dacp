@@ -14,7 +14,7 @@ class DacpClient extends EventEmitter {
     this._settings = settings;
 
     // Pool of connections to actually use
-    this._connections = {};
+    this._connections = [];
   }
 
   async connect(settings) {
@@ -32,6 +32,10 @@ class DacpClient extends EventEmitter {
       this.emit('connected');
       return serverInfo.msrv;
     });
+  }
+
+  disconnect() {
+    this._reset();
   }
 
   async requestPlayStatus() {
@@ -130,7 +134,7 @@ class DacpClient extends EventEmitter {
     this._connections.forEach(connection => {
       connection.close();
     });
-    this._connections = {};
+    this._connections = [];
     this._settings = undefined;
     this._sessionId = undefined;
   }
