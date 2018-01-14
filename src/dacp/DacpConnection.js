@@ -1,9 +1,11 @@
+
 "use strict";
 
 const http = require('http');
 const EventEmitter = require('events').EventEmitter;
 const SequentialTaskQueue = require('sequential-task-queue').SequentialTaskQueue;
 const request = require('request');
+const URL = require('url');
 
 const daap = require('../daap/Decoder');
 
@@ -87,12 +89,24 @@ class DacpConnection extends EventEmitter {
         data['session-id'] = this._sessionId;
       }
 
+      let qs = '';
+      for (let key of Object.keys(data)) {
+        qs += `${qs.length > 0 ? '&' : '?'}${key}=${data[key]}`;
+      }
+
+      // const url = `http://${this._host}/${relativeUri}${qs}`;
+
+      const url = new URL.URL(`http://${this._host}/${relativeUri}`);
+      url.search = qs;
+
       const options = {
         encoding: null,
-        url: `http://${this._host}/${relativeUri}`,
-        qs: data,
+        url: url,
         headers: {
-          'Viewer-Only-Client': '1'
+          'Viewer-Only-Client': '1',
+          'Client-DAAP-Version': '3.12',
+          'Client-ATV-Sharing-Version': '1.2',
+          'Client-iTunes-Sharing-Version': '3.10'
         },
         agent: this._agent
       };

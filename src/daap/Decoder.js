@@ -6,7 +6,7 @@ const daap = {
     "type": "list"
   },
   "abar": {
-    "name": "daap.browseartistlisting   ",
+    "name": "daap.browseartistlisting",
     "type": "list"
   },
   "abcp": {
@@ -215,24 +215,24 @@ const daap = {
   "aply": {
     "description": "response to /databases/id/containers",
     "name": "daap.databaseplaylists",
-    "type": "list"
+    "type": "struct"
   },
   "apro": {
     "name": "daap.protocolversion",
     "type": "version"
   },
   "apso": {
-    "description": "response to /databases/id/containers/id/items",
+    "description": "response to /databases/id/miids/id/items",
     "name": "daap.playlistsongs",
-    "type": "list"
+    "type": "struct"
   },
   "arif": {
     "name": "daap.resolveinfo",
-    "type": "list"
+    "type": "struct"
   },
   "arsv": {
     "name": "daap.resolve",
-    "type": "list"
+    "type": "struct"
   },
   "asaa": {
     "name": "daap.songalbumartist",
@@ -485,11 +485,11 @@ const daap = {
   "avdb": {
     "description": "response to a /databases",
     "name": "daap.serverdatabases",
-    "type": "list"
+    "type": "struct"
   },
   "cmst": {
     "name": "dacp.playstatus",
-    "type": "list"
+    "type": "struct"
   },
   "cafe": {
     "name": "dacp.fullscreenenabled",
@@ -545,6 +545,10 @@ const daap = {
   "caas": {
     "type": "int"
   },
+  "cacr": {
+    "name": "Cue response",
+    "type": "struct",
+  },
   "cant": {
     "name": "dacp.remainingtime",
     "type": "int"
@@ -582,7 +586,7 @@ const daap = {
   },
   "cmgt": {
     "name": "dmcp.getpropertyresponse",
-    "type": "list"
+    "type": "struct"
   },
   "cmmk": {
     "name": "dmcp.mediakind",
@@ -603,7 +607,7 @@ const daap = {
   "mccr": {
     "description": "the response to the content-codes request",
     "name": "dmap.contentcodesresponse",
-    "type": "list"
+    "type": "struct"
   },
   "mcna": {
     "description": "the full name of the code",
@@ -618,7 +622,7 @@ const daap = {
   "mcon": {
     "description": "an arbitrary container",
     "name": "dmap.container",
-    "type": "list"
+    "type": "struct"
   },
   "mctc": {
     "name": "dmap.containercount",
@@ -641,7 +645,7 @@ const daap = {
   "mdcl": {
     "description": "a dictionary entry",
     "name": "dmap.dictionary",
-    "type": "list"
+    "type": "struct"
   },
   "mdst": {
     "name": "dmap.downloadstatus",
@@ -657,7 +661,7 @@ const daap = {
   },
   "merr": {
     "name": "dmap.error",
-    "type": "list"
+    "type": "struct"
   },
   "mers": {
     "name": "dmap.error2",
@@ -700,12 +704,12 @@ const daap = {
   "mlit": {
     "description": "a single item in said list",
     "name": "dmap.listingitem",
-    "type": "list"
+    "type": "struct"
   },
   "mlog": {
     "description": "response to a /login",
     "name": "dmap.loginresponse",
-    "type": "list"
+    "type": "struct"
   },
   "mpco": {
     "name": "dmap.parentcontainerid",
@@ -714,7 +718,7 @@ const daap = {
   "mper": {
     "description": "a persistent id",
     "name": "dmap.persistentid",
-    "type": "long"
+    "type": "ulong"
   },
   "mpro": {
     "name": "dmap.protocolversion",
@@ -788,7 +792,7 @@ const daap = {
   "msrv": {
     "description": "response to a /server-info",
     "name": "dmap.serverinforesponse",
-    "type": "list"
+    "type": "struct"
   },
   "mstc": {
     "name": "dmap.utctime",
@@ -832,7 +836,7 @@ const daap = {
   "mupd": {
     "description": "response to a /update",
     "name": "dmap.updateresponse",
-    "type": "list"
+    "type": "struct"
   },
   "musr": {
     "name": "dmap.serverrevision",
@@ -848,9 +852,62 @@ const daap = {
   },
   "prsv": {
     "name": "daap.resolve",
-    "type": "list"
+    "type": "struct"
   }
 };
+
+function _decodeList(buffer, start, end) {
+  const result = [];
+
+  for (let index = start; index <= end - 8;) {
+    const code = buffer.toString('utf8', index, index + 4);
+    const length = buffer.slice(index + 4, index + 8).readUInt32BE(0)
+    const type = daap[code];
+
+    if (type) {
+      let value = null;
+      try {
+        if (type.type === 'byte') {
+          value = buffer.readUInt8(index + 8);
+        } else if (type.type === 'date') {
+          value = buffer.readIntBE(index + 8, 4);
+        } else if (type.type === 'short') {
+          value = buffer.readUInt16BE(index + 8);
+        } else if (type.type === 'int') {
+          value = buffer.readUInt32BE(index + 8);
+        } else if (type.type === 'long') {
+          value = buffer.readIntBE(index + 8, 8);
+        } else if (type.type === 'list') {
+          value = _decodeList(buffer, index + 8, index + 8 + length);
+        } else if (type.type === 'struct') {
+          value = _decode(buffer, index + 8, index + 8 + length);
+        } else if (type.type === 'string') {
+          value = buffer.toString('utf8', index + 8, index + 8 + length);
+        } else if (type.type === 'version') {
+          const v = buffer.readUInt32BE(index + 8);
+          const major = Math.floor(v / 65536);
+          const minor = v - major * 65536;
+          value = { major: major, minor: minor };
+        }
+        else {
+          throw new Error("What?");
+        }
+
+        result.push(value);
+      } catch (e) {
+        console.log('error on %s', code);
+        console.error(e);
+      }
+    }
+    else {
+      console.log(`Skipping "${code}" - don't know how to parse. length=${length}`);
+    }
+
+    index += 8 + length;
+  }
+
+  return result;
+}
 
 function _decode(buffer, start, end) {
   const result = {};
@@ -872,7 +929,11 @@ function _decode(buffer, start, end) {
           value = buffer.readUInt32BE(index + 8);
         } else if (type.type === 'long') {
           value = buffer.readIntBE(index + 8, 8);
+        } else if (type.type === 'ulong') {
+          value = buffer.readUIntBE(index + 8, 8);
         } else if (type.type === 'list') {
+          value = _decodeList(buffer, index + 8, index + 8 + length);
+        } else if (type.type === 'struct') {
           value = _decode(buffer, index + 8, index + 8 + length);
         } else if (type.type === 'string') {
           value = buffer.toString('utf8', index + 8, index + 8 + length);

@@ -29,6 +29,8 @@ class DacpClient extends EventEmitter {
         throw new Error("Missing server info response container");
       }
 
+      await this.getDatabases();
+
       this.emit('connected');
       return serverInfo.msrv;
     });
@@ -36,6 +38,63 @@ class DacpClient extends EventEmitter {
 
   disconnect() {
     this._reset();
+  }
+
+  async getDatabases() {
+    return await this._withConnection(this.STATUS_CONNECTION, async (connection) => {
+      const response = await connection.sendRequest('databases');
+      this.log(`Databases: ${JSON.stringify(response)}`);
+
+      if (response.avdb && response.avdb.mlcl && response.avdb.mlcl[0]) {
+        this._databaseId = response.avdb.mlcl[0].miid;
+        this._databasePersistentId = response.avdb.mlcl[0].mper;
+      }
+    });
+  }
+
+
+  async queue(name) {
+    return await this._withConnection(this.CONTROL_CONNECTION, async (connection) => {
+
+      const playlist = await this.getItem(name);
+      if (playlist && playlist.miid) {
+        await this.clearNowPlayingQueue();
+
+        const response2 = await connection.sendRequest('ctrl-int/1/playqueue-edit', {
+          'command': 'add',
+          'query': `'dmap.itemid:${playlist.miid}'`,
+          'query-modifier': 'containers',
+          'mode': 3
+        });
+        this.log(JSON.stringify(response2));
+      }
+    });
+  }
+
+  async getItem(name) {
+    return await this._withConnection(this.CONTROL_CONNECTION, async (connection) => {
+      const response = await connection.sendRequest(`databases/${this._databaseId}/containers`, {
+        meta: 'all',
+        query: `dmap.itemname:${name}`
+      });
+
+      if (response && response.aply) {
+        if (response.aply.mrco > 0) {
+          return response.aply.mlcl.find(mlit => mlit.minm === name);
+        }
+      }
+
+      return undefined;
+    });
+  }
+
+  async clearNowPlayingQueue() {
+    return await this._withConnection(this.CONTROL_CONNECTION, async (connection) => {
+      const response = await connection.sendRequest('ctrl-int/1/playqueue-edit', {
+        'command': 'clear',
+        'mode': '0x6D61696E'
+      });
+    });
   }
 
   async requestPlayStatus() {
@@ -82,6 +141,15 @@ class DacpClient extends EventEmitter {
   async play() {
     return await this._withConnection(this.CONTROL_CONNECTION, async (connection) => {
       return connection.sendRequest('ctrl-int/1/playpause');
+    });
+  }
+
+  async playQueue() {
+    return await this._withConnection(this.CONTROL_CONNECTION, async (connection) => {
+      return connection.sendRequest('ctrl-int/1/playqueue-edit', {
+        'command': 'playnow',
+        'index': 1
+      });
     });
   }
 
@@ -137,6 +205,7 @@ class DacpClient extends EventEmitter {
     this._connections = [];
     this._settings = undefined;
     this._sessionId = undefined;
+    this._databaseId = undefined;
   }
 };
 
