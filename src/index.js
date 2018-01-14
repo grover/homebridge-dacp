@@ -8,6 +8,7 @@ const DacpRemote = require('./dacp/DacpRemote');
 const MediaSkippingTypes = require('./hap/MediaSkippingTypes');
 const NowPlayingTypes = require('./hap/NowPlayingTypes');
 const PlayerControlTypes = require('./hap/PlayerControlsTypes');
+const PlaylistTypes = require('./hap/PlaylistTypes');
 
 const HOMEBRIDGE = {
   Accessory: null,
@@ -51,6 +52,7 @@ const DacpPlatform = class {
     MediaSkippingTypes.registerWith(api.hap);
     NowPlayingTypes.registerWith(api.hap);
     PlayerControlTypes.registerWith(api.hap);
+    PlaylistTypes.registerWith(api.hap);
   }
 
   _didFinishLaunching() {
