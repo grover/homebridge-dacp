@@ -9,6 +9,7 @@ const MediaSkippingService = require('./MediaSkippingService');
 const NowPlayingService = require('./NowPlayingService');
 const PlayerControlsService = require('./PlayerControlsService');
 const SpeakerService = require('./SpeakerService');
+const PlaylistService = require('./PlaylistService');
 
 let Characteristic, Service, Homebridge;
 
@@ -21,10 +22,9 @@ class DacpAccessory {
 
     this.log = log;
     this.name = config.name;
-    this.pairing = config.pairing;
     this.serviceName = config.serviceName;
-    this.version = config.version;
-    this.features = config.features || {};
+
+    this.config = config;
 
     this._isAnnounced = false;
     this._isReachable = false;
@@ -54,7 +54,8 @@ class DacpAccessory {
       this.getPlayerControlsService(homebridge),
       this.getSpeakerService(homebridge),
       this.getNowPlayingService(homebridge),
-      this.getMediaSkippingService(homebridge)
+      this.getMediaSkippingService(homebridge),
+      this.getPlaylistService(homebridge)
     ].filter(m => m != null);
 
     this._playerControlsService.isPrimaryService = true;
@@ -69,8 +70,8 @@ class DacpAccessory {
       .setCharacteristic(Characteristic.Manufacturer, 'Michael Froehlich')
       .setCharacteristic(Characteristic.Model, 'DACP Accessory')
       .setCharacteristic(Characteristic.SerialNumber, '42')
-      .setCharacteristic(Characteristic.FirmwareRevision, this.version)
-      .setCharacteristic(Characteristic.HardwareRevision, this.version);
+      .setCharacteristic(Characteristic.FirmwareRevision, this.config.version)
+      .setCharacteristic(Characteristic.HardwareRevision, this.config.version);
   }
 
   getBridgingStateService() {
@@ -84,7 +85,7 @@ class DacpAccessory {
   }
 
   getSpeakerService(homebridge) {
-    if (this.features && this.features['no-volume-controls'] === true) {
+    if (this.config.features && this.config.features['no-volume-controls'] === true) {
       return;
     }
 
@@ -96,7 +97,7 @@ class DacpAccessory {
     let service = Service.PlayerControlsService;
     let characteristic = Characteristic.PlayPause;
 
-    if (this.features && this.features['alternate-playpause-switch'] === true) {
+    if (this.config.features && this.config.features['alternate-playpause-switch'] === true) {
       service = Service.Switch;
       characteristic = Characteristic.On;
     }
@@ -115,12 +116,21 @@ class DacpAccessory {
   }
 
   getMediaSkippingService(homebridge) {
-    if (this.features && this.features['no-skip-controls'] === true) {
+    if (this.config.features && this.config.features['no-skip-controls'] === true) {
       return;
     }
 
     this._mediaSkippingService = new MediaSkippingService(homebridge, this.log, this.name, this._dacpClient);
     return this._mediaSkippingService.getService();
+  }
+
+  getPlaylistService(homebridge) {
+    if (!this.config.playlists) {
+      return undefined;
+    }
+
+    this._playlistService = new PlaylistService(homebridge, this.log, this.name, this._dacpClient, this.config);
+    return this._playlistService.getService();
   }
 
   identify(callback) {
@@ -194,7 +204,7 @@ class DacpAccessory {
 
     const settings = {
       host: `${this._remoteHost}:${this._remotePort}`,
-      pairing: this.pairing
+      pairing: this.config.pairing
     };
 
     this.log(`Connecting to ${this.name} (${this._remoteHost}:${this._remotePort})`);

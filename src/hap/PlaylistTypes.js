@@ -13,7 +13,7 @@ module.exports = {
     ////////////////////////////////////////////////////////////////////////////
     Characteristic.StartPlaylist = function (displayName) {
 
-      const uuid = hap.uuid.generate(displayName);
+      const uuid = hap.uuid.generate(displayName).toUpperCase();
       Characteristic.call(this, displayName, uuid);
 
       this.setProps({
