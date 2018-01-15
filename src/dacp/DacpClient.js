@@ -2,6 +2,7 @@
 
 const EventEmitter = require('events').EventEmitter;
 const util = require('util');
+const debug = require('debug')('dacp-client');
 
 const DacpConnection = require('./DacpConnection');
 
@@ -15,10 +16,12 @@ class DacpClient extends EventEmitter {
 
     // Pool of connections to actually use
     this._connections = [];
+    this._revisionNumber = 0;
   }
 
   async connect(settings) {
     if (!!this._settings) {
+      debug('Can\'t connect an already active client.');
       throw new Error('Can\'t connect an already active client.');
     }
     this._settings = settings;
@@ -26,12 +29,17 @@ class DacpClient extends EventEmitter {
     return await this._withConnection(this.STATUS_CONNECTION, async (connection) => {
       const serverInfo = await connection.sendRequest('server-info');
       if (!serverInfo || !serverInfo.msrv) {
+        debug('Missing server info response container');
         throw new Error("Missing server info response container");
       }
 
-      await this.getDatabases();
+      if (serverInfo.msrv.msdc > 0) {
+        // await this.getDatabases();
+      }
 
       this.emit('connected');
+      debug('connected');
+
       return serverInfo.msrv;
     });
   }
@@ -42,18 +50,26 @@ class DacpClient extends EventEmitter {
 
   async getDatabases() {
     return await this._withConnection(this.STATUS_CONNECTION, async (connection) => {
-      const response = await connection.sendRequest('databases');
-      this.log(`Databases: ${JSON.stringify(response)}`);
-
-      if (response.avdb && response.avdb.mlcl && response.avdb.mlcl[0]) {
-        this._databaseId = response.avdb.mlcl[0].miid;
-        this._databasePersistentId = response.avdb.mlcl[0].mper;
+      try {
+        const response = await connection.sendRequest('databases');
+        if (response.avdb && response.avdb.mlcl && response.avdb.mlcl[0]) {
+          this._databaseId = response.avdb.mlcl[0].miid;
+          this._databasePersistentId = response.avdb.mlcl[0].mper;
+        }
+      }
+      catch (e) {
+        // Apple TV doesn't support the /databases request, which also
+        // indicates that we do not have playlist support or other stuff.
       }
     });
   }
 
 
   async queue(name) {
+    if (this._databaseId === undefined) {
+      throw new Error('Not supported on Apple TV.');
+    }
+
     return await this._withConnection(this.CONTROL_CONNECTION, async (connection) => {
 
       const playlist = await this.getItem(name);
@@ -66,12 +82,15 @@ class DacpClient extends EventEmitter {
           'query-modifier': 'containers',
           'mode': 3
         });
-        this.log(JSON.stringify(response2));
       }
     });
   }
 
   async getItem(name) {
+    if (this._databaseId === undefined) {
+      throw new Error('Not supported on Apple TV.');
+    }
+
     return await this._withConnection(this.CONTROL_CONNECTION, async (connection) => {
       const response = await connection.sendRequest(`databases/${this._databaseId}/containers`, {
         meta: 'all',
@@ -90,7 +109,7 @@ class DacpClient extends EventEmitter {
 
   async clearNowPlayingQueue() {
     return await this._withConnection(this.CONTROL_CONNECTION, async (connection) => {
-      const response = await connection.sendRequest('ctrl-int/1/playqueue-edit', {
+      return await connection.sendRequest('ctrl-int/1/playqueue-edit', {
         'command': 'clear',
         'mode': '0x6D61696E'
       });
@@ -101,9 +120,17 @@ class DacpClient extends EventEmitter {
     const self = this;
 
     return await this._withConnection(this.STATUS_CONNECTION, async (connection) => {
+      const qs = {};
+      if (this._revisionNumber) {
+        qs['revision-number'] = this._revisionNumber;
+      }
+      else {
+        qs['revision-number'] = 0;
+      }
+
       const response = await connection.sendRequest(
         'ctrl-int/1/playstatusupdate',
-        { 'revision-number': this._revisionNumber });
+        qs);
 
       if (response.cmst === undefined || response.cmst.cmsr === undefined) {
         const e = new Error('Missing revision number in play status update response');

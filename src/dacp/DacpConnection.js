@@ -7,6 +7,9 @@ const SequentialTaskQueue = require('sequential-task-queue').SequentialTaskQueue
 const request = require('request');
 const URL = require('url');
 
+const util = require('util');
+const debug = require('debug')('dacp');
+
 const daap = require('../daap/Decoder');
 
 class DacpConnection extends EventEmitter {
@@ -94,8 +97,6 @@ class DacpConnection extends EventEmitter {
         qs += `${qs.length > 0 ? '&' : '?'}${key}=${data[key]}`;
       }
 
-      // const url = `http://${this._host}/${relativeUri}${qs}`;
-
       const url = new URL.URL(`http://${this._host}/${relativeUri}`);
       url.search = qs;
 
@@ -103,10 +104,13 @@ class DacpConnection extends EventEmitter {
         encoding: null,
         url: url,
         headers: {
+          'Accept': '*/*',
+          // 'Accept-Encoding': 'gzip',
           'Viewer-Only-Client': '1',
           'Client-DAAP-Version': '3.12',
           'Client-ATV-Sharing-Version': '1.2',
-          'Client-iTunes-Sharing-Version': '3.10'
+          'Client-iTunes-Sharing-Version': '3.10',
+          'User-Agent': 'TVRemote/186 CFNetwork/808.1.4 Darwin/16.1.0'
         },
         agent: this._agent
       };
@@ -120,13 +124,18 @@ class DacpConnection extends EventEmitter {
             options: options
           };
 
-          this.emit('failed', error);
+          if (error) {
+            this.emit('failed', error);
+          }
+
+          debug(`${url} failed: ${response.statusCode}`);
           reject(e);
           return;
         }
 
         try {
           response = daap.decode(response.body);
+          debug(`${url} responded: ${util.inspect(response)}`);
         }
         catch (e) {
           this.emit('failed', error);

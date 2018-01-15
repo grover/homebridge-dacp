@@ -1,6 +1,6 @@
 "use strict";
 
-const inherits = require('util').inherits;
+const util = require('util');
 const backoff = require('backoff');
 
 const DacpClient = require('./dacp/DacpClient');
@@ -191,7 +191,7 @@ class DacpAccessory {
         this._schedulePlayStatusUpdate();
       })
       .catch(e => {
-        this.log(`[${this.name}] Retrieving updates from DACP server failed with error ${JSON.stringify(e)}`);
+        this.log(`[${this.name}] Retrieving updates from DACP server failed with error ${util.inspect(e)}`);
       });
   }
 
@@ -219,7 +219,7 @@ class DacpAccessory {
         this._schedulePlayStatusUpdate();
       })
       .catch(error => {
-        this.log(`[${this.name}] Connection to DACP server failed: ${JSON.stringify(error)}`);
+        this.log(`[${this.name}] Connection to DACP server failed: ${util.inspect(error)}`);
 
         this._backoff.backoff();
       });
@@ -228,7 +228,7 @@ class DacpAccessory {
   _onDacpFailure(e) {
     this.log(`Fatal error while talking to ${this.name}:`);
     this.log('');
-    this.log(`  Error: ${JSON.stringify(e)}`);
+    this.log(`  Error: ${util.inspect(e)}`);
     this.log('');
 
     this._backoff.backoff();
