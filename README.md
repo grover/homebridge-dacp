@@ -56,10 +56,13 @@ After [Homebridge](https://github.com/nfarina/homebridge) has been installed:
         {
           "name": "iTunes on iMac",
           "pairing": "...pairing code...",
-          "serviceName": "...service name..."
+          "serviceName": "...service name...",
           "features": {
             "no-skip-controls": true
-          }
+          },
+          "playlists": [
+            "My Favorites"
+          ]
         }
       ]
     }
@@ -93,6 +96,13 @@ characteristics are supported:
 
 All features are boolean true/false switches.
 
+## Playlists
+
+Playlists is an array of values that represent the names of iTunes playlists that are exposed to HomeKit as
+individual switches. Turning the switch on will start playback of the named playlist. The switch will turn itself off after 500ms.
+
+In the example above ```My Favorites``` is a playlist from iTunes.
+
 ## Accessory Services
 
 Each device will expose multiple services:
@@ -102,6 +112,7 @@ Each device will expose multiple services:
 * [Player Controls Service](src/hap/PlayerControlsTypes.js)
 * [Media Skipping Service](src/hap/MediaSkippingTypes.js)
 * [Now Playing Service](src/hap/NowPlayingTypes.js)
+* [Playlist Control Service](src/hap/PlaylistTypes.js)
 
 ### Player Controls Service
 

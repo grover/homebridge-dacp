@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.8 - 2018-01-15
+
+- Added support to trigger the playback of Playlists
+
 ## Version 0.7.5 - 2017-12-27
 
 #### Bugfixes
