@@ -81,4 +81,4 @@ If you don't want to see track skipping controls, you can disable them with the 
 
 ## Using multiple feature toggles
 
-You can use multiple feature toggles at the same time. The [multiple](../../examples/multiple) example shows a full configuration of the DACP plugin with multiple features ready for your use.
+You can use multiple feature toggles at the same time. The [features](../../examples/features) example shows a full configuration of the DACP plugin with multiple features ready for your use.
