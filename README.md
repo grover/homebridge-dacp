@@ -28,17 +28,18 @@ See the [changelog](CHANGELOG.md) for changes between versions of this package.
   * [Configuring iTunes](docs/configuration/itunes.md)
   * [Feature Toggles](docs/configuration/features.md)
   * [Configuring Playlists](docs/configuration/playlists.md)
-* [Services and Characteristics](docs/services/services.md)
+* Custom Services and Characteristics
   * [Media Skipping Service](docs/services/mediaskippingservice.md)
   * [Now Playing Service](docs/services/nowplayingservice.md)
   * [Player Controls Service](docs/services/playercontrolsservice.md)
   * [Playlist Control Service](docs/services/playlistcontrolservice.md)
-
-## Examples
-
-There are several example configurations available in the [examples/](examples) folder. They illustrate typical 
-configurations of this plugin and the remotes therein must be paired to your iTunes or AppleTV to fully illustrate
-the capabilities.
+* Examples
+  * [Basic installation](examples/install)
+  * [Apple TV configuration](examples/appletv)
+  * [iTunes configuration](examples/itunes)
+  * [Features](examples/features)
+  * [Playlists](examples/playlists)
+  * [Multiple remotes for multiple apps/devices](examples/multiple-remotes)
 
 ## Some asks for friendly gestures
 

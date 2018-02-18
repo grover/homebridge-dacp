@@ -1,0 +1,30 @@
+{
+  "bridge": {
+    "name": "Homebridge-DACP Multiple Remotes Example",
+    "username": "AF:BB:CC:DD:EE:FF",
+    "port": 54718,
+    "pin": "135-79-864"
+  },
+  "platforms": [
+    {
+      "platform": "DACP",
+      "devices": [
+        {
+          "name": "AppleTV-1",
+          "features": {
+            "no-volume-controls": true
+          }
+        },
+        {
+          "name": "AppleTV-2",
+          "features": {
+            "no-volume-controls": true
+          }
+        },
+        {
+          "name": "iTunes"
+        }
+      ]
+    }
+  ]
+}
