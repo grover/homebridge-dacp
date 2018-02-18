@@ -15,6 +15,13 @@ The Speaker service, which provides volume control and mute, can be disabled if 
 required - for example if the Apple TV is connected to an A/V receiver that is integrated
 with HomeKit via a different plugin.
 
+## Status
+
+[![HitCount](http://hits.dwyl.io/grover/homebridge-dacp.svg)](https://github.com/grover/homebridge-dacp)
+[![Build Status](https://travis-ci.org/grover/homebridge-dacp.png?branch=master)](https://travis-ci.org/grover/homebridge-dacp)
+[![Node version](https://img.shields.io/node/v/homebridge-dacp.svg?style=flat)](http://nodejs.org/download/)
+[![NPM Version](https://badge.fury.io/js/homebridge-dacp.svg?style=flat)](https://npmjs.org/package/homebridge-dacp)
+
 ## Changelog
 
 See the [changelog](CHANGELOG.md) for changes between versions of this package.
