@@ -100,7 +100,7 @@ const DacpPlatform = class {
 
     if (this._dacpErrors < 5) {
       const timeout = 120000;
-      this.log(`Restarting MDNS browser for DACP in ${timeout / 1000} seconds.`);
+      this.log(`Restarting bonjour browser for DACP in ${timeout / 1000} seconds.`);
       setTimeout(() => this._dacpBrowser.start(), timeout);
     }
     else {

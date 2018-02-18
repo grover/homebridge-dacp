@@ -3,7 +3,7 @@
 const EventEmitter = require('events').EventEmitter;
 const crypto = require('crypto');
 const http = require('http');
-const mdns = require('mdns');
+const bonjour = require('bonjour')();
 const querystring = require('querystring');
 
 class DacpRemote extends EventEmitter {
@@ -26,10 +26,13 @@ class DacpRemote extends EventEmitter {
     this._httpServer = http.createServer(this._handleRequest.bind(this));
     this._httpServer.listen();
 
-    this._ad = mdns.createAdvertisement(
-      mdns.tcp('_touch-remote'),
-      this._httpServer.address().port,
-      { txtRecord: txtRecord });
+    this._ad = bonjour.publish({
+      name: this.config.deviceName,
+      port: this._httpServer.address().port,
+      type: 'touch-remote',
+      protocol: 'tcp',
+      txt: txtRecord
+    });
 
     this._pairingHash = this._buildPairingHash(this.config.pair, this.config.pairPasscode);
   }

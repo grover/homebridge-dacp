@@ -1,7 +1,7 @@
 'use strict';
 
 const EventEmitter = require('events').EventEmitter;
-const mdns = require('mdns');
+const bonjour = require('bonjour')();
 
 class DacpBrowser extends EventEmitter {
 
@@ -12,24 +12,21 @@ class DacpBrowser extends EventEmitter {
   }
 
   start() {
+    if (this._browser) {
+      return;
+    }
+
     this.log('Starting DACP browser...');
+    this._browser = bonjour.find({
+      type: 'touch-able',
+      protocol: 'tcp'
+    });
 
-    const ServiceName = 'touch-able';
-    const ResolverSequence = [
-      mdns.rst.DNSServiceResolve(),
-      'DNSServiceGetAddrInfo' in mdns.dns_sd ? mdns.rst.DNSServiceGetAddrInfo() : mdns.rst.getaddrinfo({ families: [0] }),
-      mdns.rst.makeAddressesUnique()
-    ];
-
-    this._browser = mdns.createBrowser(
-      mdns.tcp(ServiceName),
-      { resolverSequence: ResolverSequence });
-
-    this._browser.on('serviceUp', service => {
+    this._browser.on('up', service => {
       this.emit('serviceUp', service);
     });
 
-    this._browser.on('serviceDown', service => {
+    this._browser.on('down', service => {
       this.emit('serviceDown', service);
     });
 

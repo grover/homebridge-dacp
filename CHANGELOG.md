@@ -6,6 +6,7 @@
 - Improved error handling
 - Added on demand DACP packet tracing
 - Updated documentation
+- Changed from mdns to bonjour to take care of installation issues
 
 ## Version 0.7.5 - 2017-12-27
 
