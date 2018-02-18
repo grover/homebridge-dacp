@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-let Accessory, Characteristic, Service;
+let Characteristic, Service;
 
 const moment = require('moment');
 const util = require('util');
@@ -8,7 +8,6 @@ const util = require('util');
 class NowPlayingService {
 
   constructor(homebridge, log, name, dacp) {
-    Accessory = homebridge.Accessory;
     Characteristic = homebridge.Characteristic;
     Service = homebridge.Service;
 
@@ -124,7 +123,7 @@ class NowPlayingService {
 
   async _requestPlaybackPosition() {
     try {
-      const response = await this._dacp.getProperty('dacp.playingtime')
+      const response = await this._dacp.getProperty('dacp.playingtime');
       this._timeout = undefined;
 
       this._state.remaining = this._getProperty(response, 'cant', Number.NaN);
@@ -138,6 +137,6 @@ class NowPlayingService {
       this._resetCharacteristicsToDefaults();
     }
   }
-};
+}
 
 module.exports = NowPlayingService;

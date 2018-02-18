@@ -1,3 +1,4 @@
+'use strict';
 
 const version = require('../package.json').version;
 
@@ -28,7 +29,7 @@ module.exports = (homebridge) => {
   HOMEBRIDGE.homebridge = homebridge;
 
   homebridge.registerPlatform(platformName, platformPrettyName, DacpPlatform, false);
-}
+};
 
 const DacpPlatform = class {
   constructor(log, config, api) {
@@ -127,8 +128,8 @@ const DacpPlatform = class {
         const passcode = this._randomBaseString(4, 10);
 
         this.log('');
-        this.log(`Skipping creation of the accessory "${device.name}" because it doesn\'t have a pairing code or`);
-        this.log(`service name yet. You need to pair the device/iTunes, reconfigure and restart homebridge.`);
+        this.log(`Skipping creation of the accessory "${device.name}" because it doesn't have a pairing code or`);
+        this.log('service name yet. You need to pair the device/iTunes, reconfigure and restart homebridge.');
         this.log('');
         this.log(`Beginning remote control announcements for the accessory "${device.name}".`);
         this.log('');
@@ -139,7 +140,7 @@ const DacpPlatform = class {
         return;
       }
 
-      device.uuid = HOMEBRIDGE.UUIDGen.generate(platformPrettyName + ":" + device.name);
+      device.uuid = HOMEBRIDGE.UUIDGen.generate(platformPrettyName + ':' + device.name);
       device.version = version;
 
       return new DacpAccessory(this.api, this.log, device);
@@ -178,9 +179,9 @@ const DacpPlatform = class {
   }
 
   _randomBaseString(length, base) {
-    var generated = "";
+    var generated = '';
     for (var ctr = 0; ctr < length; ctr++)
       generated += Math.floor(Math.random() * base).toString(base);
     return generated;
-  };
-}
+  }
+};

@@ -1,0 +1,9 @@
+language: node_js
+node_js:
+  - "9"
+
+script:
+  - npm run lint
+
+before_install:
+  - sudo apt-get install libavahi-compat-libdnssd-dev

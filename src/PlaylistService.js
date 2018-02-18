@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 let Characteristic, Service;
 
@@ -42,7 +42,7 @@ class PlaylistService {
     }
 
     if (this._dacp.isAppleTV()) {
-      this.log(`Playlists not supported on AppleTV.`);
+      this.log('Playlists not supported on AppleTV.');
       this.done(callback, characteristic);
       return;
     }
@@ -69,6 +69,6 @@ class PlaylistService {
       characteristic.updateValue(false);
     }, 500);
   }
-};
+}
 
 module.exports = PlaylistService;

@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const EventEmitter = require('events').EventEmitter;
 const crypto = require('crypto');
@@ -50,7 +50,7 @@ class DacpRemote extends EventEmitter {
 
   _sendPairingSuccess(response) {
     const values = {
-      'cmpg': this._newBuffer(this.config.pair, "hex"),
+      'cmpg': this._newBuffer(this.config.pair, 'hex'),
       'cmnm': this.config.deviceName,
       'cmty': this.config.deviceType
     };
@@ -79,14 +79,14 @@ class DacpRemote extends EventEmitter {
 
   _sendPairingFailure(response) {
     response.writeHead(404, {
-      'Content-Length': "0"
+      'Content-Length': '0'
     });
     response.end();
   }
 
   _newBuffer(contents, type) {
     return typeof Buffer.from == 'function' ? Buffer.from(contents, type) : new Buffer(contents, type);
-  };
+  }
 
   _binaryLength(length) {
     var ascii = '';
@@ -100,7 +100,7 @@ class DacpRemote extends EventEmitter {
     var merged = pair;
 
     for (var ctr = 0; ctr < passcode.length; ctr++)
-      merged += passcode[ctr] + "\x00";
+      merged += passcode[ctr] + '\x00';
 
     return crypto.createHash('md5').update(merged).digest('hex');
   }
@@ -114,6 +114,6 @@ class DacpRemote extends EventEmitter {
     this._ad.stop();
     this._httpServer.close();
   }
-};
+}
 
 module.exports = DacpRemote;

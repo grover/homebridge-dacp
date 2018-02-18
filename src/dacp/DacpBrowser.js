@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const EventEmitter = require('events').EventEmitter;
 const mdns = require('mdns');
@@ -48,6 +48,6 @@ class DacpBrowser extends EventEmitter {
       this._browser = undefined;
     }
   }
-};
+}
 
 module.exports = DacpBrowser;

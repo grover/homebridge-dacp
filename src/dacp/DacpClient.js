@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const EventEmitter = require('events').EventEmitter;
 const util = require('util');
@@ -20,7 +20,7 @@ class DacpClient extends EventEmitter {
   }
 
   async connect(settings) {
-    if (!!this._settings) {
+    if (this._settings) {
       debug('Can\'t connect an already active client.');
       throw new Error('Can\'t connect an already active client.');
     }
@@ -30,7 +30,7 @@ class DacpClient extends EventEmitter {
       const serverInfo = await connection.sendRequest('server-info');
       if (!serverInfo || !serverInfo.msrv) {
         debug('Missing server info response container');
-        throw new Error("Missing server info response container");
+        throw new Error('Missing server info response container');
       }
 
       if (serverInfo.msrv.msdc > 0) {
@@ -84,7 +84,7 @@ class DacpClient extends EventEmitter {
       if (playlist && playlist.miid) {
         await this.clearNowPlayingQueue();
 
-        const response2 = await connection.sendRequest('ctrl-int/1/playqueue-edit', {
+        await connection.sendRequest('ctrl-int/1/playqueue-edit', {
           'command': 'add',
           'query': `'dmap.itemid:${playlist.miid}'`,
           'query-modifier': 'containers',
@@ -125,8 +125,6 @@ class DacpClient extends EventEmitter {
   }
 
   async requestPlayStatus() {
-    const self = this;
-
     return await this._withConnection(this.STATUS_CONNECTION, async (connection) => {
       const qs = {};
       if (this._revisionNumber) {
@@ -158,7 +156,7 @@ class DacpClient extends EventEmitter {
         { 'properties': prop });
 
       if (!response || !(response.cmgt || response.cmst)) {
-        throw new Error("Missing get property response container");
+        throw new Error('Missing get property response container');
       }
 
       return response.cmgt || response.cmst;
@@ -205,7 +203,7 @@ class DacpClient extends EventEmitter {
       let c = this._connections[type];
       if (!c) {
         this.log(`Creating ${type} connection to ${this._settings.host}`);
-        c = await this._createConnection(type);
+        c = await this._createConnection();
         this._connections[type] = c;
         c.on('failed', this._onConnectionFailed.bind(this, type));
       }
@@ -220,7 +218,7 @@ class DacpClient extends EventEmitter {
     }
   }
 
-  async _createConnection(type) {
+  async _createConnection() {
     const c = new DacpConnection(this._settings.host, this._settings.pairing);
     this._sessionId = await c.connect(this._sessionId);
     return c;
@@ -242,7 +240,7 @@ class DacpClient extends EventEmitter {
     this._sessionId = undefined;
     this._databaseId = undefined;
   }
-};
+}
 
 DacpClient.prototype.STATUS_CONNECTION = 'status';
 DacpClient.prototype.CONTROL_CONNECTION = 'properties';

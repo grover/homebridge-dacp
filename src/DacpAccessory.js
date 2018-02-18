@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const util = require('util');
 const backoff = require('backoff');
@@ -11,11 +11,11 @@ const PlayerControlsService = require('./PlayerControlsService');
 const SpeakerService = require('./SpeakerService');
 const PlaylistService = require('./PlaylistService');
 
-let Characteristic, Service, Homebridge;
+let Characteristic, Service;
 
 class DacpAccessory {
 
-  constructor(api, log, config, remote) {
+  constructor(api, log, config) {
     this.api = api;
     Characteristic = this.api.hap.Characteristic;
     Service = this.api.hap.Service;
@@ -57,11 +57,6 @@ class DacpAccessory {
       this.getMediaSkippingService(homebridge),
       this.getPlaylistService(homebridge)
     ].filter(m => m != null);
-
-    this._playerControlsService.isPrimaryService = true;
-    this._playerControlsService.addLinkedService(this._mediaSkippingService);
-    this._playerControlsService.addLinkedService(this._speakerService);
-    this._playerControlsService.addLinkedService(this._nowPlayingService);
   }
 
   getAccessoryInformationService() {

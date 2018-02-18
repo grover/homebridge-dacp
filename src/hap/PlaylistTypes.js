@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const inherits = require('util').inherits;
 

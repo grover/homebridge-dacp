@@ -4,6 +4,7 @@
   "description": "A homebridge plugin to control iTunes, AirPlay speakers and Apple TV devices",
   "main": "src/index.js",
   "scripts": {
+    "lint": "./node_modules/.bin/eslint src",
     "release": "npm-github-release"
   },
   "author": "Michael Fröhlich",
@@ -35,6 +36,7 @@
     "homebridge": ">=0.4.32"
   },
   "devDependencies": {
+    "eslint": "^4.18.0",
     "npm-github-release": "^0.9.0"
   }
 }

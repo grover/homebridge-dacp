@@ -11,6 +11,8 @@
       "devices": [
         {
           "name": "iTunes",
+          "pairing": "F6623E9EB08EEC69",
+          "serviceName": "AEA342CEA7A8E7EE",
           "playlists": [
             "Test"
           ]

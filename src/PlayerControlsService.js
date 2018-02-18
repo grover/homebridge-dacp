@@ -1,14 +1,8 @@
-"use strict";
-
-let Accessory, Characteristic, Service;
+'use strict';
 
 class PlayerControlsService {
 
   constructor(homebridge, log, name, dacp, serviceCtor, characteristicCtor) {
-    Accessory = homebridge.Accessory;
-    Characteristic = homebridge.Characteristic;
-    Service = homebridge.Service;
-
     this.log = log;
     this.name = name;
     this._dacp = dacp;
@@ -49,7 +43,7 @@ class PlayerControlsService {
 
     this._isPlaying = isPlaying;
     try {
-      const response = await this._dacp.play();
+      await this._dacp.play();
       this.log('Playback status update done.');
       callback();
     }
@@ -58,6 +52,6 @@ class PlayerControlsService {
       callback();
     }
   }
-};
+}
 
 module.exports = PlayerControlsService;

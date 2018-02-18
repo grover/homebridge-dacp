@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 let Characteristic, Service;
 
@@ -36,7 +36,7 @@ class MediaSkippingService {
       return;
     }
 
-    this.log(`Skipping forward.`);
+    this.log('Skipping forward.');
 
     try {
       this._dacp.nextTrack();
@@ -58,7 +58,7 @@ class MediaSkippingService {
       return;
     }
 
-    this.log(`Skipping backward.`);
+    this.log('Skipping backward.');
 
     try {
       await this._dacp.prevTrack();
@@ -82,6 +82,6 @@ class MediaSkippingService {
         .updateValue(false);
     }, 100);
   }
-};
+}
 
 module.exports = MediaSkippingService;

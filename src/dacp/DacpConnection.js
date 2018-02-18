@@ -1,5 +1,4 @@
-
-"use strict";
+'use strict';
 
 const http = require('http');
 const EventEmitter = require('events').EventEmitter;
@@ -97,7 +96,7 @@ class DacpConnection extends EventEmitter {
         qs += `${qs.length > 0 ? '&' : '?'}${key}=${data[key]}`;
       }
 
-      const url = new URL.URL(`http://${this._host}/${relativeUri}`);
+      const url = new URL.URL(uri);
       url.search = qs;
 
       const options = {
@@ -167,6 +166,6 @@ class DacpConnection extends EventEmitter {
     const args = Array.from(arguments).slice(1);
     this.emit(state, ...args);
   }
-};
+}
 
 module.exports = DacpConnection;

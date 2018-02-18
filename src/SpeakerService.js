@@ -1,13 +1,12 @@
-"use strict";
+'use strict';
 
 const util = require('util');
 
-let Accessory, Characteristic, Service;
+let Characteristic, Service;
 
 class SpeakerService {
 
   constructor(homebridge, log, name, dacp) {
-    Accessory = homebridge.Accessory;
     Characteristic = homebridge.Characteristic;
     Service = homebridge.Service;
 
@@ -55,7 +54,7 @@ class SpeakerService {
   }
 
   _updateSpeakerCharacteristics(volume) {
-    this.log("Updating characteristics with current volume: v=" + volume);
+    this.log(`Updating characteristics with current volume: v=${volume}`);
 
     this._service.getCharacteristic(Characteristic.Volume)
       .updateValue(volume, undefined, undefined);
@@ -70,9 +69,9 @@ class SpeakerService {
 
   async _getVolume(callback) {
     try {
-      const response = await this._dacp.getProperty('dmcp.volume')
+      const response = await this._dacp.getProperty('dmcp.volume');
       response.cmvo = response.cmvo || 0;
-      this.log("Returning current volume: v=" + response.cmvo);
+      this.log(`Returning current volume: v=${response.cmvo}`);
       callback(undefined, response.cmvo);
       this._volume = response.cmvo;
     }
@@ -82,10 +81,10 @@ class SpeakerService {
   }
 
   async _setVolume(volume, callback) {
-    this.log("Setting current volume to v=" + volume);
+    this.log(`Setting current volume to v=${volume}`);
 
     try {
-      await this._dacp.setProperty('dmcp.volume', volume)
+      await this._dacp.setProperty('dmcp.volume', volume);
       callback();
       this._updateSpeakerCharacteristics(volume);
     }
@@ -107,7 +106,7 @@ class SpeakerService {
   }
 
   _setMute(muted, callback) {
-    this.log(`Setting current mute state to ${muted ? "muted" : "unmuted"}`);
+    this.log(`Setting current mute state to ${muted ? 'muted' : 'unmuted'}`);
 
     if (muted) {
       this._mute(callback);
@@ -137,6 +136,6 @@ class SpeakerService {
     this._hasMuted = false;
     this._restoreVolume = undefined;
   }
-};
+}
 
 module.exports = SpeakerService;
