@@ -32,8 +32,8 @@
     "home-automation"
   ],
   "engines": {
-    "node": ">=8.9.3",
-    "homebridge": ">=0.4.32"
+    "node": ">=9.3.0",
+    "homebridge": ">=0.4.36"
   },
   "devDependencies": {
     "eslint": "^4.18.0",
