@@ -1,0 +1,21 @@
+{
+  "bridge": {
+    "name": "Homebridge-DACP Playlists Example",
+    "username": "AE:BB:CC:DD:EE:FF",
+    "port": 54718,
+    "pin": "135-79-864"
+  },
+  "platforms": [
+    {
+      "platform": "DACP",
+      "devices": [
+        {
+          "name": "iTunes",
+          "playlists": [
+            "Test"
+          ]
+        }
+      ]
+    }
+  ]
+}

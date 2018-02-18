@@ -37,7 +37,13 @@ class PlaylistService {
   async _startPlaylist(playlist, characteristic, value, callback) {
 
     if (value === false) {
-      callback();
+      this.done(callback, characteristic);
+      return;
+    }
+
+    if (this._dacp.isAppleTV()) {
+      this.log(`Playlists not supported on AppleTV.`);
+      this.done(callback, characteristic);
       return;
     }
 
@@ -48,16 +54,20 @@ class PlaylistService {
       await this._dacp.playQueue();
 
       this.log('Playlist started.');
-      callback();
-
-      setTimeout(() => {
-        characteristic.updateValue(false);
-      }, 500);
+      this.done(callback, characteristic);
     }
     catch (error) {
       this.log('Failed to start playlist.');
       callback(error);
     }
+  }
+
+  done(callback, characteristic) {
+    callback();
+
+    setTimeout(() => {
+      characteristic.updateValue(false);
+    }, 500);
   }
 };
 

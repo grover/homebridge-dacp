@@ -33,7 +33,7 @@ module.exports = (homebridge) => {
 const DacpPlatform = class {
   constructor(log, config, api) {
     this.log = log;
-    this.log('DACP Platform Plugin Loaded');
+    this.log(`DACP Platform Plugin Loaded - Version ${version}`);
     this.config = config;
     this.api = api;
 

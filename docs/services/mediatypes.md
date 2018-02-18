@@ -12,5 +12,4 @@ The following media types are known:
 | 8 | Audio book |
 | 64 | TV show |
 
-
 If you know one not on this list, file an issue or better yet a pull request. 

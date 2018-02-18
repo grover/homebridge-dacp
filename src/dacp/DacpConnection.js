@@ -124,11 +124,15 @@ class DacpConnection extends EventEmitter {
             options: options
           };
 
+          if (response) {
+            debug(`${url} failed: ${response.statusCode}`);
+          }
+
           if (error) {
+            debug(`${url} failed with error: ${error}`);
             this.emit('failed', error);
           }
 
-          debug(`${url} failed: ${response.statusCode}`);
           reject(e);
           return;
         }

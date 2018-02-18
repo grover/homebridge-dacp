@@ -3,6 +3,9 @@
 ## Version 0.8 - 2018-01-15
 
 - Added support to trigger the playback of Playlists
+- Improved error handling
+- Added on demand DACP packet tracing
+- Updated documentation
 
 ## Version 0.7.5 - 2017-12-27
 

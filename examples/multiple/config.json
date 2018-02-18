@@ -1,0 +1,23 @@
+{
+  "bridge": {
+    "name": "Homebridge-DACP Multiple Features Example",
+    "username": "AD:BB:CC:DD:EE:FF",
+    "port": 54718,
+    "pin": "135-79-864"
+  },
+  "platforms": [
+    {
+      "platform": "DACP",
+      "devices": [
+        {
+          "name": "Multiple-Features",
+          "features": {
+            "alternate-playpause-switch": true,
+            "no-volume-controls": true,
+            "no-skip-controls": true
+          }
+        }
+      ]
+    }
+  ]
+}

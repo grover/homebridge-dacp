@@ -1,0 +1,14 @@
+{
+  "bridge": {
+    "name": "Homebridge-DACP Install Example",
+    "username": "AA:BB:CC:DD:EE:FF",
+    "port": 54718,
+    "pin": "135-79-864"
+  },
+  "platforms": [
+    {
+      "platform": "DACP",
+      "devices": []
+    }
+  ]
+}

@@ -34,7 +34,7 @@ class DacpClient extends EventEmitter {
       }
 
       if (serverInfo.msrv.msdc > 0) {
-        // await this.getDatabases();
+        await this.getDatabases();
       }
 
       this.emit('connected');
@@ -44,8 +44,16 @@ class DacpClient extends EventEmitter {
     });
   }
 
-  disconnect() {
-    this._reset();
+  async disconnect() {
+    return await this._withConnection(this.STATUS_CONNECTION, async (connection) => {
+      await connection.sendRequest('logout');
+      this._reset();
+    });
+  }
+
+  isAppleTV() {
+    // AppleTV doesn't provide the database required to play a playlist
+    return this._sessionId !== undefined && this._databaseId === undefined;
   }
 
   async getDatabases() {

@@ -1,0 +1,21 @@
+{
+  "bridge": {
+    "name": "Homebridge-DACP AppleTV Example",
+    "username": "AC:BB:CC:DD:EE:FF",
+    "port": 54718,
+    "pin": "135-79-864"
+  },
+  "platforms": [
+    {
+      "platform": "DACP",
+      "devices": [
+        {
+          "name": "AppleTV",
+          "features": {
+            "no-volume-controls": true
+          }
+        }
+      ]
+    }
+  ]
+}
