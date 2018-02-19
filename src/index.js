@@ -10,6 +10,7 @@ const MediaSkippingTypes = require('./hap/MediaSkippingTypes');
 const NowPlayingTypes = require('./hap/NowPlayingTypes');
 const PlayerControlTypes = require('./hap/PlayerControlsTypes');
 const PlaylistTypes = require('./hap/PlaylistTypes');
+const SleepTypes = require('./hap/SleepTypes');
 
 const HOMEBRIDGE = {
   Accessory: null,
@@ -54,6 +55,7 @@ const DacpPlatform = class {
     NowPlayingTypes.registerWith(api.hap);
     PlayerControlTypes.registerWith(api.hap);
     PlaylistTypes.registerWith(api.hap);
+    SleepTypes.registerWith(api.hap);
   }
 
   _didFinishLaunching() {
@@ -87,7 +89,7 @@ const DacpPlatform = class {
 
     // How often has this occurred? If less than 5 times within last 10mins,
     // keep retrying. We might have a sporadic network disconnect or other reason
-    // that this has been failing. We want to deal with this gracefully, so we 
+    // that this has been failing. We want to deal with this gracefully, so we
     // need a restart strategy for the DACP browser and the accessories.
 
     this.log('Fatal error browsing for DACP services:');

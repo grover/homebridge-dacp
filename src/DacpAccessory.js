@@ -10,6 +10,8 @@ const NowPlayingService = require('./NowPlayingService');
 const PlayerControlsService = require('./PlayerControlsService');
 const SpeakerService = require('./SpeakerService');
 const PlaylistService = require('./PlaylistService');
+const SleepService = require('./SleepService');
+
 
 let Characteristic, Service;
 
@@ -55,7 +57,8 @@ class DacpAccessory {
       this.getSpeakerService(homebridge),
       this.getNowPlayingService(homebridge),
       this.getMediaSkippingService(homebridge),
-      this.getPlaylistService(homebridge)
+      this.getPlaylistService(homebridge),
+      this.getSleepService(homebridge)
     ].filter(m => m != null);
   }
 
@@ -126,6 +129,16 @@ class DacpAccessory {
 
     this._playlistService = new PlaylistService(homebridge, this.log, this.name, this._dacpClient, this.config);
     return this._playlistService.getService();
+  }
+
+  getSleepService(homebridge) {
+    let service = Service.Lightbulb;
+    let characteristic = Characteristic.On;
+
+    this._sleepService = new SleepService(homebridge, this.log, this.name, this._dacpClient, service, characteristic);
+    this._playStatusUpdateListeners.push(this._sleepService);
+
+    return this._sleepService.getService();
   }
 
   identify(callback) {
