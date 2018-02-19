@@ -242,7 +242,7 @@ class ArtworkCamera {
           let videoSsrc = sessionInfo.video_ssrc;
 
           const vf = `scale=w='min(${width},iw)':h='min(${height},ih)':force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2`;
-          const ffmpegCommand = `-v debug -re -loop 1 -i ${this.options.artworkImageSource} -vf ${vf} -threads 0 -vcodec ${this.options.vcodec} -an -pix_fmt yuv420p -r ${fps} -f rawvideo -tune zerolatency -b:v ${bitrate}k -bufsize ${bitrate}k -payload_type 99 -ssrc ${videoSsrc} -f rtp -srtp_out_suite AES_CM_128_HMAC_SHA1_80 -srtp_out_params ${videoKey.toString('base64')} srtp://${targetAddress}:${targetVideoPort}?rtcpport=${targetVideoPort}&localrtcpport=${targetVideoPort}&pkt_size=1378`;
+          const ffmpegCommand = `-v info -re -loop 1 -i ${this.options.artworkImageSource} -vf ${vf} -threads 0 -vcodec ${this.options.vcodec} -an -pix_fmt yuv420p -r ${fps} -f rawvideo -tune zerolatency -b:v ${bitrate}k -bufsize ${bitrate}k -payload_type 99 -ssrc ${videoSsrc} -f rtp -srtp_out_suite AES_CM_128_HMAC_SHA1_80 -srtp_out_params ${videoKey.toString('base64')} srtp://${targetAddress}:${targetVideoPort}?rtcpport=${targetVideoPort}&localrtcpport=${targetVideoPort}&pkt_size=1378`;
           this.log(`Launching video stream for session ${sessionIdentifier} via ffmpeg with options: ${ffmpegCommand}`);
 
           let ffmpeg = spawn(this.options.binary, ffmpegCommand.split(' '), { env: process.env, stdio: 'inherit' });

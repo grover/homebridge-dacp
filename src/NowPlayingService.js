@@ -8,7 +8,7 @@ const fs = require('fs');
 
 class NowPlayingService {
 
-  constructor(homebridge, log, name, dacp) {
+  constructor(homebridge, log, name, dacp, artworkFile) {
     Characteristic = homebridge.Characteristic;
     Service = homebridge.Service;
 
@@ -16,6 +16,7 @@ class NowPlayingService {
     this.name = name;
     this._dacp = dacp;
     this._timeout = undefined;
+    this._artworkFile = artworkFile;
 
     this.createService();
   }
@@ -146,13 +147,21 @@ class NowPlayingService {
   }
 
   _updateArtwork() {
-    this._dacp.getArtwork().then(response => {
-      fs.writeFile('/tmp/nowplaying.png', response.body, (err) => {
-        if (err) {
-          this.log('Failed to write artwork.');
-        }
-      });
-    });
+    if (typeof this._artworkFile === 'string') {
+      this._dacp.getArtwork()
+        .then(response => {
+          fs.writeFile(this._artworkFile, response.body, (err) => {
+            if (err) {
+              this.log(`Failed to write artwork: ${util.inspect(err)}`);
+              this.log(`Will not write any artwork from now on.`);
+              this._artworkFile = undefined;
+            }
+          });
+        })
+        .catch(e => {
+          this.log(`Artwork request failed. Error: ${util.inspect(e)}`);
+        });
+    }
   }
 }
 
