@@ -963,6 +963,39 @@ function decode(buffer) {
   return _decode(buffer, 0, buffer.length);
 }
 
+function encode(obj) {
+  let b = Buffer.alloc(0);
+
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      let value = obj[key];
+      const valueType = typeof value;
+
+      switch (valueType) {
+        case 'number': {
+          const valueBuf = Buffer.alloc(4);
+          valueBuf.writeUInt32BE(value);
+          value = valueBuf;
+          break;
+        }
+
+        case 'string':
+          value = Buffer.from(value, 'utf8');
+          break;
+      }
+
+      const valueKey = Buffer.from(key, 'ascii');
+      const valueLength = new Buffer(4);
+      valueLength.writeUInt32BE(value.length);
+
+      b = Buffer.concat([b, valueKey, valueLength, value]);
+    }
+  }
+
+  return b;
+}
+
 module.exports = {
-  decode: decode
+  decode: decode,
+  encode: encode
 };

@@ -198,6 +198,21 @@ class DacpClient extends EventEmitter {
     });
   }
 
+  async sendRemoteKey(key) {
+    const data = {
+      'prompt-id': 1
+    };
+
+    const body = {
+      'cmcc': 0x30,
+      'cmbe': key
+    };
+
+    return await this._withConnection(this.CONTROL_CONNECTION, async (connection) => {
+      return connection.sendRequest('ctrl-int/1/controlpromptentry', data, body);
+    });
+  }
+
   async _withConnection(type, action) {
     try {
       let c = this._connections[type];

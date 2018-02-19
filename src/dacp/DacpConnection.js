@@ -69,10 +69,10 @@ class DacpConnection extends EventEmitter {
     // Not sure what to do here yet.
   }
 
-  async sendRequest(relativeUri, data) {
+  async sendRequest(relativeUri, data, body) {
     return this._taskQueue.push(() => {
       this._assertConnected();
-      return this._sendRequest(relativeUri, data);
+      return this._sendRequest(relativeUri, data, body);
     });
   }
 
@@ -82,7 +82,7 @@ class DacpConnection extends EventEmitter {
     }
   }
 
-  async _sendRequest(relativeUri, data) {
+  async _sendRequest(relativeUri, data, body) {
     return new Promise((resolve, reject) => {
       const uri = `http://${this._host}/${relativeUri}`;
       data = data || {};
@@ -113,6 +113,10 @@ class DacpConnection extends EventEmitter {
         },
         agent: this._agent
       };
+
+      if (body) {
+        options.body = daap.encode(body);
+      }
 
       request(options, (error, response) => {
         // this.log(`Done ${JSON.stringify(options)}`);
