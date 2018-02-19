@@ -141,8 +141,10 @@ class DacpConnection extends EventEmitter {
         }
 
         try {
-          response = daap.decode(response.body);
-          debug(`${url} responded: ${util.inspect(response)}`);
+          if (response.headers['content-type'] === 'application/x-dmap-tagged') {
+            response = daap.decode(response.body);
+            debug(`${url} responded: ${util.inspect(response)}`);
+          }
         }
         catch (e) {
           this.emit('failed', error);

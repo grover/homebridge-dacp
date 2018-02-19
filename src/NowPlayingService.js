@@ -4,6 +4,7 @@ let Characteristic, Service;
 
 const moment = require('moment');
 const util = require('util');
+const fs = require('fs');
 
 class NowPlayingService {
 
@@ -48,6 +49,8 @@ class NowPlayingService {
   }
 
   update(response) {
+    const prevTrack = this._state.track;
+
     this._state = {
       track: this._getProperty(response, 'cann', ''),
       album: this._getProperty(response, 'canl', ''),
@@ -60,6 +63,10 @@ class NowPlayingService {
     };
 
     this._updateCharacteristics();
+
+    if (prevTrack !== this._state.track) {
+      this._updateArtwork();
+    }
   }
 
   _getProperty(response, prop, defaultValue) {
@@ -136,6 +143,16 @@ class NowPlayingService {
       this.log(`Failed to retrieve the current playback position. Stopping continuous updates. Error: ${util.inspect(e)}`);
       this._resetCharacteristicsToDefaults();
     }
+  }
+
+  _updateArtwork() {
+    this._dacp.getArtwork().then(response => {
+      fs.writeFile('/tmp/nowplaying.png', response.body, (err) => {
+        if (err) {
+          this.log('Failed to write artwork.');
+        }
+      });
+    });
   }
 }
 

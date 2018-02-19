@@ -213,6 +213,15 @@ class DacpClient extends EventEmitter {
     });
   }
 
+  async getArtwork() {
+    return await this._withConnection(this.STATUS_CONNECTION, async (connection) => {
+      return connection.sendRequest('ctrl-int/1/nowplayingartwork?', {
+        mw: 1024,
+        mh: 576
+      });
+    });
+  }
+
   async _withConnection(type, action) {
     try {
       let c = this._connections[type];
