@@ -52,7 +52,7 @@ const cmds = {
 
 class InputControlService {
 
-  constructor(homebridge, log, name, dacp) {
+  constructor(homebridge, log, name, dacp, features) {
     Characteristic = homebridge.Characteristic;
     Service = homebridge.Service;
 
@@ -61,26 +61,62 @@ class InputControlService {
     this._dacp = dacp;
     this._timeout = undefined;
 
-    this.createServices();
+    this.createServices(features);
   }
 
   getService() {
     return this._services;
   }
 
-  createServices() {
+  createServices(features) {
+    const useInputControls = features['input-controls'];
+    const useAlternateInputControls = features['alternate-input-controls'];
+
+    if (useInputControls) {
+      this._createInputControlService();
+    }
+    else if (useAlternateInputControls) {
+      this._createAlternateInputControls(useAlternateInputControls);
+    }
+  }
+
+  _createInputControlService() {
     this._services = [
-      this._createKeyService('Topmenu', cmds.topmenu),
-      this._createKeyService('Menu', cmds.menu),
-      this._createKeyService('Select', cmds.select),
-      this._createKeyService('Up', cmds.up),
-      this._createKeyService('Down', cmds.down),
-      this._createKeyService('Left', cmds.left),
-      this._createKeyService('Right', cmds.right)
+      new Service.InputControlService(`${this.name} Remote`)
+    ];
+
+    this._characteristics = [
+      this._services[0].getCharacteristic(Characteristic.TopMenuButton).on('set', this._onKeyPress.bind(this, 'Topmenu', cmds.topmenu)),
+      this._services[0].getCharacteristic(Characteristic.MenuButton).on('set', this._onKeyPress.bind(this, 'Menu', cmds.menu)),
+      this._services[0].getCharacteristic(Characteristic.SelectButton).on('set', this._onKeyPress.bind(this, 'Select', cmds.select)),
+      this._services[0].getCharacteristic(Characteristic.UpButton).on('set', this._onKeyPress.bind(this, 'Up', cmds.up)),
+      this._services[0].getCharacteristic(Characteristic.DownButton).on('set', this._onKeyPress.bind(this, 'Down', cmds.down)),
+      this._services[0].getCharacteristic(Characteristic.LeftButton).on('set', this._onKeyPress.bind(this, 'Left', cmds.left)),
+      this._services[0].getCharacteristic(Characteristic.RightButton).on('set', this._onKeyPress.bind(this, 'Right', cmds.right)),
     ];
   }
 
-  _createKeyService(title, commands) {
+  _createAlternateInputControls(alternateControls) {
+    this._services = [
+      this._createKeyService(alternateControls, 'Topmenu', cmds.topmenu),
+      this._createKeyService(alternateControls, 'Menu', cmds.menu),
+      this._createKeyService(alternateControls, 'Select', cmds.select),
+      this._createKeyService(alternateControls, 'Up', cmds.up),
+      this._createKeyService(alternateControls, 'Down', cmds.down),
+      this._createKeyService(alternateControls, 'Left', cmds.left),
+      this._createKeyService(alternateControls, 'Right', cmds.right)
+    ].filter(s => s != undefined);
+
+    this._characteristics = this._services.map(svc => svc.getCharacteristic(Characteristic.On));
+  }
+
+  _createKeyService(features, title, commands) {
+    if (features !== true && features instanceof Array) {
+      if (!features.includes(title.toLowerCase())) {
+        return;
+      }
+    }
+
     const svc = new Service.Switch(`${this.name} ${title}`, `input - ${title}`);
     svc.getCharacteristic(Characteristic.On)
       .on('set', this._onKeyPress.bind(this, title, commands));
@@ -114,10 +150,7 @@ class InputControlService {
 
   _resetCharacteristics() {
     setTimeout(() => {
-      this._services.forEach(svc => {
-        svc.getCharacteristic(Characteristic.On)
-          .updateValue(false);
-      });
+      this._characteristics.forEach(c => c.updateValue(false));
     }, 100);
   }
 };

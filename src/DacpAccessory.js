@@ -114,7 +114,7 @@ class DacpAccessory {
 
   getMediaSkippingService(homebridge) {
     if (this.config.features && this.config.features['no-skip-controls'] === true) {
-      return;
+      return undefined;
     }
 
     this._mediaSkippingService = new MediaSkippingService(homebridge, this.log, this.name, this._dacpClient);
@@ -131,7 +131,11 @@ class DacpAccessory {
   }
 
   getInputControlService(homebridge) {
-    this._inputControlService = new InputControlService(homebridge, this.log, this.name, this._dacpClient, this.config);
+    if (this.config.features && !this.config.features['input-controls'] && !this.config.features['alternate-input-controls']) {
+      return [];
+    }
+
+    this._inputControlService = new InputControlService(homebridge, this.log, this.name, this._dacpClient, this.config.features);
     return this._inputControlService.getService();
   }
 
