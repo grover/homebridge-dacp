@@ -24,6 +24,11 @@ To use the plugin, add the following basic configuration to your `config.json` t
 
 After you've saved your `config.json` you can go ahead and launch homebridge and observe the logs.
 
+## Running in Alpine Linux or a Docker environment?
+
+You're likely going to face MDNS and name lookup problems. To circumvent those it is recommended that you enable the
+[use-referer feature](configuration/features.md#Use-Referer).
+
 ## First run
 
 With the above configuration homebridge and homebridge-dacp will print the following logs:

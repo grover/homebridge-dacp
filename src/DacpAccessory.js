@@ -140,8 +140,13 @@ class DacpAccessory {
 
     this.log(`The accessory ${this.name} is announced.`);
 
-    this._remoteHost = service.host;
-    this._remotePort = service.port;
+    this._dacpService = service;
+    if (this.config.features['use-referer']) {
+      // Prevent further name lookups as this likely fails in Alpine Linux, which
+      // is used for docker-homebridge and on Synology machines.
+      this._dacpService.host = service.referer.address;
+    }
+
     this._isAnnounced = true;
 
     // Let backoff trigger the connection
@@ -163,8 +168,7 @@ class DacpAccessory {
     });
 
     this._dacpClient.disconnect();
-    this._remoteHost = undefined;
-    this._remotePort = undefined;
+    this._dacpService = undefined;
     this._setReachable(false);
   }
 
@@ -198,11 +202,11 @@ class DacpAccessory {
     }
 
     const settings = {
-      host: `${this._remoteHost}:${this._remotePort}`,
+      host: `${this._dacpService.host}:${this._dacpService.port}`,
       pairing: this.config.pairing
     };
 
-    this.log(`Connecting to ${this.name} (${this._remoteHost}:${this._remotePort})`);
+    this.log(`Connecting to ${this.name} (${this._dacpService.host}:${this._dacpService.port})`);
     this._dacpClient.connect(settings)
       .then(serverInfo => {
         if (serverInfo.minm) {

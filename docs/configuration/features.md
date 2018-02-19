@@ -79,6 +79,33 @@ If you don't want to see track skipping controls, you can disable them with the 
 }
 ```
 
+## Use-Referer
+
+If you're runnning homebridge-dacp in an docker-homebridge environment, the MDNS lookups will likely fail in some
+situations. This was well documented in [Issue #10](https://github.com/grover/homebridge-dacp/issues/10). To remedy the
+situation you need to enable the use of the referer address instead of hostname lookups:
+
+```json
+{
+  "bridge": {
+    ...
+  },
+  "platforms": [
+    {
+      "platform": "DACP",
+      "devices": [
+        {
+          "name": "Use Referer Example",
+          "features": {
+            "use-referer": true
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
 ## Using multiple feature toggles
 
 You can use multiple feature toggles at the same time. The [features](../../examples/features) example shows a full configuration of the DACP plugin with multiple features ready for your use.

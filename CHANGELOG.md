@@ -7,6 +7,7 @@
 - Added on demand DACP packet tracing
 - Updated documentation
 - Changed from mdns to bonjour to take care of installation issues
+- Enable the [use of referer addresses](docs/configuration/features.md#Use-Referer) to circumvent MDNS issues in [docker-homebridge](https://github.com/oznu/docker-homebridge) - via [@oznu](https://github.com/oznu)
 
 ## Version 0.7.5 - 2017-12-27
 
