@@ -27,6 +27,9 @@ class DacpAccessory {
     this.serviceName = config.serviceName;
 
     this.config = config;
+    if (this.config.features === undefined) {
+      this.config.features = {};
+    }
 
     this._isAnnounced = false;
     this._isReachable = false;
@@ -84,7 +87,7 @@ class DacpAccessory {
   }
 
   getSpeakerService(homebridge) {
-    if (this.config.features && this.config.features['no-volume-controls'] === true) {
+    if (this.config.features['no-volume-controls'] === true) {
       return;
     }
 
@@ -96,7 +99,7 @@ class DacpAccessory {
     let service = Service.PlayerControlsService;
     let characteristic = Characteristic.PlayPause;
 
-    if (this.config.features && this.config.features['alternate-playpause-switch'] === true) {
+    if (this.config.features['alternate-playpause-switch'] === true) {
       service = Service.Switch;
       characteristic = Characteristic.On;
     }
@@ -108,14 +111,16 @@ class DacpAccessory {
   }
 
   getNowPlayingService(homebridge) {
-    this._nowPlayingService = new NowPlayingService(homebridge, this.log, this.name, this._dacpClient);
+    const artworkFile = this.config.features['album-artwork'];
+
+    this._nowPlayingService = new NowPlayingService(homebridge, this.log, this.name, this._dacpClient, artworkFile);
     this._playStatusUpdateListeners.push(this._nowPlayingService);
 
     return this._nowPlayingService.getService();
   }
 
   getMediaSkippingService(homebridge) {
-    if (this.config.features && this.config.features['no-skip-controls'] === true) {
+    if (this.config.features['no-skip-controls'] === true) {
       return undefined;
     }
 
