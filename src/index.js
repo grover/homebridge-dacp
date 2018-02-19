@@ -12,7 +12,10 @@ const PlayerControlTypes = require('./hap/PlayerControlsTypes');
 const PlaylistTypes = require('./hap/PlaylistTypes');
 const InputControlTypes = require('./hap/InputControlTypes');
 
+const ArtworkCamera = require('./artwork/ArtworkCamera');
+
 const HOMEBRIDGE = {
+  hap: null,
   Accessory: null,
   Service: null,
   Characteristic: null,
@@ -23,6 +26,7 @@ const platformName = 'homebridge-dacp';
 const platformPrettyName = 'DACP';
 
 module.exports = (homebridge) => {
+  HOMEBRIDGE.hap = homebridge.hap;
   HOMEBRIDGE.Accessory = homebridge.platformAccessory;
   HOMEBRIDGE.Service = homebridge.hap.Service;
   HOMEBRIDGE.Characteristic = homebridge.hap.Characteristic;
@@ -61,6 +65,40 @@ const DacpPlatform = class {
   _didFinishLaunching() {
     // Start looking for the controllable accessories
     this._dacpBrowser.start();
+
+    // Enable all artwork cameras (if any)
+    this._enableArtworkCameras();
+  }
+
+  _enableArtworkCameras() {
+    const configuredAccessories = [];
+
+    this.config.devices.forEach(device => {
+      const artwork = device.features['album-artwork'];
+      if (typeof artwork === 'string') {
+        const cameraName = `${device.name} Artwork`;
+        const videoConfig = {
+          "binary": "ffmpeg",
+          "vcodec": "libx264",
+          "artworkImageSource": artwork,
+          "maxStreams": 2,
+          "maxWidth": 600,
+          "maxHeight": 600,
+          "maxFPS": 2
+        };
+
+        const uuid = HOMEBRIDGE.UUIDGen.generate(cameraName);
+        const artworkCameraAccessory = new HOMEBRIDGE.Accessory(cameraName, uuid, HOMEBRIDGE.hap.Accessory.Categories.CAMERA);
+        const artworkCamera = new ArtworkCamera(this.log, HOMEBRIDGE.hap, videoConfig);
+
+        artworkCameraAccessory.configureCameraSource(artworkCamera);
+        configuredAccessories.push(artworkCameraAccessory);
+      }
+    });
+
+    if (configuredAccessories.length > 0) {
+      this.api.publishCameraAccessories(platformPrettyName, configuredAccessories);
+    }
   }
 
   _onServiceUp(service) {
