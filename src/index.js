@@ -11,6 +11,7 @@ const NowPlayingTypes = require('./hap/NowPlayingTypes');
 const PlayerControlTypes = require('./hap/PlayerControlsTypes');
 const PlaylistTypes = require('./hap/PlaylistTypes');
 const InputControlTypes = require('./hap/InputControlTypes');
+const AirplaySpeakerTypes = require('./hap/AirplaySpeakerTypes');
 
 const HOMEBRIDGE = {
   Accessory: null,
@@ -56,6 +57,7 @@ const DacpPlatform = class {
     PlayerControlTypes.registerWith(api.hap);
     PlaylistTypes.registerWith(api.hap);
     InputControlTypes.registerWith(api.hap);
+    AirplaySpeakerTypes.registerWith(api.hap);
   }
 
   _didFinishLaunching() {

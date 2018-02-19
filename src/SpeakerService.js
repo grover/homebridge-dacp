@@ -38,6 +38,9 @@ class SpeakerService {
       .on('set', this._setMute.bind(this))
       .updateValue(this._volume === 0, undefined, undefined);
 
+    speakerService.getCharacteristic(Characteristic.On)
+      .updateValue(true);
+
     return speakerService;
   }
 
@@ -84,7 +87,10 @@ class SpeakerService {
     this.log(`Setting current volume to v=${volume}`);
 
     try {
-      await this._dacp.setProperty('dmcp.volume', volume);
+      await this._dacp.setProperty({
+        'dmcp.volume': volume
+      });
+
       callback();
       this._updateSpeakerCharacteristics(volume);
     }

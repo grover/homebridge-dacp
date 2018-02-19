@@ -499,6 +499,10 @@ const daap = {
     'name': 'dacp.fullscreen',
     'type': 'byte'
   },
+  'caia': {
+    'name': 'dacp.isactive',
+    'type': 'byte'
+  },
   'caks': {
     'name': 'dacp.unknown',
     'type': 'byte'
@@ -526,6 +530,10 @@ const daap = {
   'casc': {
     'name': 'dacp.unknown',
     'type': 'byte'
+  },
+  'casp': {
+    'name': 'dacp.airplayspeakers',
+    'type': 'list'
   },
   'cash': {
     'name': 'dacp.shufflestate',

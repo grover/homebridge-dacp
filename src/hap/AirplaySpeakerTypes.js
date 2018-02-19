@@ -9,9 +9,9 @@ module.exports = {
     const Service = hap.Service;
 
     ////////////////////////////////////////////////////////////////////////////
-    // StartPlaylist Characteristic
+    // SelectSpeaker Characteristic
     ////////////////////////////////////////////////////////////////////////////
-    Characteristic.StartPlaylist = function (displayName) {
+    Characteristic.SelectSpeaker = function (displayName) {
 
       const uuid = hap.uuid.generate(displayName).toUpperCase();
       Characteristic.call(this, displayName, uuid);
@@ -22,19 +22,19 @@ module.exports = {
       });
       this.value = this.getDefaultValue();
     };
-    inherits(Characteristic.StartPlaylist, Characteristic);
+    inherits(Characteristic.SelectSpeaker, Characteristic);
 
     ////////////////////////////////////////////////////////////////////////////
-    // PlayerControlsService Service
+    // AirplaySpeakerService Service
     ////////////////////////////////////////////////////////////////////////////
-    Service.PlaylistControlService = function (displayName, subtype) {
-      Service.call(this, displayName, Service.PlaylistControlService.UUID, subtype);
+    Service.AirplaySpeakerService = function (displayName, subtype) {
+      Service.call(this, displayName, Service.AirplaySpeakerService.UUID, subtype);
 
       // Optional Characteristics
       this.addOptionalCharacteristic(Characteristic.Name);
     };
 
-    Service.PlaylistControlService.UUID = '24B5B813-8D9C-49C3-ABFB-EDE879A4FF99';
-    inherits(Service.PlaylistControlService, Service);
+    Service.AirplaySpeakerService.UUID = '007B1B43-3AFB-449C-933C-AA9ABC2DB37A';
+    inherits(Service.AirplaySpeakerService, Service);
   }
 };

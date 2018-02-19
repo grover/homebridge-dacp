@@ -163,11 +163,9 @@ class DacpClient extends EventEmitter {
     });
   }
 
-  async setProperty(prop, value) {
+  async setProperty(params) {
     return await this._withConnection(this.CONTROL_CONNECTION, async (connection) => {
-      const data = {};
-      data[prop] = value;
-      return connection.sendRequest('ctrl-int/1/setproperty', data);
+      return connection.sendRequest('ctrl-int/1/setproperty', params);
     });
   }
 
@@ -210,6 +208,20 @@ class DacpClient extends EventEmitter {
 
     return await this._withConnection(this.CONTROL_CONNECTION, async (connection) => {
       return connection.sendRequest('ctrl-int/1/controlpromptentry', data, body);
+    });
+  }
+
+  async getSpeakers() {
+    return await this._withConnection(this.STATUS_CONNECTION, async (connection) => {
+      return connection.sendRequest('ctrl-int/1/getspeakers');
+    });
+  }
+
+  async setSpeakers(speakerIds) {
+    return await this._withConnection(this.CONTROL_CONNECTION, async (connection) => {
+      return connection.sendRequest('ctrl-int/1/setspeakers', {
+        'speaker-id': speakerIds
+      });
     });
   }
 

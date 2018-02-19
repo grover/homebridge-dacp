@@ -4,6 +4,7 @@
 
 - Added input control mechanisms for Apple TV
 - Added album artwork support
+- Added Airplay speaker selection support
 
 ## Version 0.8 - 2018-02-22
 

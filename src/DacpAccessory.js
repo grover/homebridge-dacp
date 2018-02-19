@@ -11,6 +11,7 @@ const PlayerControlsService = require('./PlayerControlsService');
 const SpeakerService = require('./SpeakerService');
 const PlaylistService = require('./PlaylistService');
 const InputControlService = require('./InputControlService');
+const AirplaySpeakerService = require('./AirplaySpeakerService');
 
 let Characteristic, Service;
 
@@ -57,7 +58,8 @@ class DacpAccessory {
       this.getNowPlayingService(homebridge),
       this.getMediaSkippingService(homebridge),
       this.getPlaylistService(homebridge),
-      ...this.getInputControlService(homebridge)
+      ...this.getInputControlService(homebridge),
+      this.getAirplaySpeakerService(homebridge)
     ].filter(m => m != null);
   }
 
@@ -139,6 +141,15 @@ class DacpAccessory {
     return this._inputControlService.getService();
   }
 
+  getAirplaySpeakerService(homebridge) {
+    if (!this.config.speakers) {
+      return undefined;
+    }
+
+    this._airplaySpeakerService = new AirplaySpeakerService(homebridge, this.log, this.name, this._dacpClient, this.config);
+    return this._airplaySpeakerService.getService();
+  }
+
   identify(callback) {
     this.log(`Identify requested on ${this.name}`);
     callback();
@@ -189,6 +200,13 @@ class DacpAccessory {
       .then(() => {
         if (this._speakerService) {
           return this._speakerService.update();
+        }
+
+        return Promise.resolve();
+      })
+      .then(() => {
+        if (this._airplaySpeakerService) {
+          return this._airplaySpeakerService.update();
         }
 
         return Promise.resolve();
