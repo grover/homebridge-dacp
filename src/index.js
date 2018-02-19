@@ -10,6 +10,7 @@ const MediaSkippingTypes = require('./hap/MediaSkippingTypes');
 const NowPlayingTypes = require('./hap/NowPlayingTypes');
 const PlayerControlTypes = require('./hap/PlayerControlsTypes');
 const PlaylistTypes = require('./hap/PlaylistTypes');
+const InputControlTypes = require('./hap/InputControlTypes');
 
 const HOMEBRIDGE = {
   Accessory: null,
@@ -54,6 +55,7 @@ const DacpPlatform = class {
     NowPlayingTypes.registerWith(api.hap);
     PlayerControlTypes.registerWith(api.hap);
     PlaylistTypes.registerWith(api.hap);
+    InputControlTypes.registerWith(api.hap);
   }
 
   _didFinishLaunching() {
