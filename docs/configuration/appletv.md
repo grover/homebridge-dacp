@@ -21,7 +21,8 @@ The following configuration is recommended for Apple TV:
 {
   "name": "AppleTV",
   "features": {
-    "no-volume-controls": true
+    "no-volume-controls": true,
+    "input-controls": true
   }
 }
 ```
@@ -31,6 +32,8 @@ See also the [AppleTV example configuration](../../examples/appletv/config.json)
 ### Features
 
 You may want to play around with `no-volume-controls` as this depends on your home theater set up. The documentation for this and others can be found on the [features page](features.md).
+
+The `input-controls` feature enables the input control service, which provides the Top Menu, Menu, Select and navigation buttons through HomeKit. This is not useable with the official Apple Home app. There's an equivalent available for Apple Home users documented on the features page.
 
 ## Pairing
 

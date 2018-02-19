@@ -40,6 +40,7 @@ See the [changelog](CHANGELOG.md) for changes between versions of this package.
   * [Now Playing Service](docs/services/nowplayingservice.md)
   * [Player Controls Service](docs/services/playercontrolsservice.md)
   * [Playlist Control Service](docs/services/playlistcontrolservice.md)
+  * [Input Control Service](docs/services/inputcontrolservice.md)
 * Examples
   * [Basic installation](examples/install)
   * [Apple TV configuration](examples/appletv)
