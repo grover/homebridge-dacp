@@ -1,7 +1,10 @@
 'use strict';
 
+const util = require('util');
 const EventEmitter = require('events').EventEmitter;
+
 const mdns = require('mdns');
+const mdnsResolver = require('mdns-resolver');
 
 class DacpBrowser extends EventEmitter {
 
@@ -16,18 +19,14 @@ class DacpBrowser extends EventEmitter {
 
     const ServiceName = 'touch-able';
     const ResolverSequence = [
-      mdns.rst.DNSServiceResolve(),
-      'DNSServiceGetAddrInfo' in mdns.dns_sd ? mdns.rst.DNSServiceGetAddrInfo() : mdns.rst.getaddrinfo({ families: [0] }),
-      mdns.rst.makeAddressesUnique()
+      mdns.rst.DNSServiceResolve()
     ];
 
     this._browser = mdns.createBrowser(
       mdns.tcp(ServiceName),
       { resolverSequence: ResolverSequence });
 
-    this._browser.on('serviceUp', service => {
-      this.emit('serviceUp', service);
-    });
+    this._browser.on('serviceUp', this._onServiceUp.bind(this));
 
     this._browser.on('serviceDown', service => {
       this.emit('serviceDown', service);
@@ -47,6 +46,32 @@ class DacpBrowser extends EventEmitter {
       this._browser.stop();
       this._browser = undefined;
     }
+  }
+
+  _onServiceUp(service) {
+    mdnsResolver.resolve4(service.host)
+      .then(host => {
+        service.host = host;
+        return service;
+      })
+      .catch(e => {
+        this.log(`Failed to resolve service ${service.host} using IPv4 MDNS lookups.`);
+        this.log(`Specific error: ${util.inspect(e)}`);
+
+        return mdnsResolver.resolve6(service.host)
+          .then(host => {
+            service.host = `[${host}]`;
+            return service;
+          });
+      })
+      .catch(e => {
+        this.log(`Failed to resolve service ${service.host} using IPv4 and IPv6 MDNS lookups.`);
+        this.log('Discarding service.');
+        this.log(`Specific error: ${util.inspect(e)} `);
+      })
+      .then(service => {
+        this.emit('serviceUp', service);
+      });
   }
 }
 
