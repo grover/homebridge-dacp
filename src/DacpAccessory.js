@@ -138,10 +138,10 @@ class DacpAccessory {
       return;
     }
 
-    this.log(`The accessory ${this.name} is announced.`);
+    this.log(`The accessory ${this.name} is announced as ${service.host}:${service.port}.`);
+    this.log(`It's an ${service.txtRecord.DvTy} named ${service.txtRecord.CtlN}`);
 
-    this._remoteHost = service.host;
-    this._remotePort = service.port;
+    this._service = service;
     this._isAnnounced = true;
 
     // Let backoff trigger the connection
@@ -163,8 +163,7 @@ class DacpAccessory {
     });
 
     this._dacpClient.disconnect();
-    this._remoteHost = undefined;
-    this._remotePort = undefined;
+    this._service = undefined;
     this._setReachable(false);
   }
 
@@ -198,11 +197,11 @@ class DacpAccessory {
     }
 
     const settings = {
-      host: `${this._remoteHost}:${this._remotePort}`,
+      host: `${this._service.host}:${this._service.port}`,
       pairing: this.config.pairing
     };
 
-    this.log(`Connecting to ${this.name} (${this._remoteHost}:${this._remotePort})`);
+    this.log(`Connecting to ${this.name} (${this._service.host}:${this._service.port})`);
     this._dacpClient.connect(settings)
       .then(serverInfo => {
         if (serverInfo.minm) {
