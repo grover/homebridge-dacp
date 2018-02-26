@@ -2,6 +2,8 @@
 
 const version = require('../package.json').version;
 
+const isPi = require('detect-rpi');
+
 const DacpAccessory = require('./DacpAccessory');
 const DacpBrowser = require('./dacp/DacpBrowser');
 const DacpRemote = require('./dacp/DacpRemote');
@@ -86,6 +88,10 @@ const DacpPlatform = class {
           "maxHeight": 600,
           "maxFPS": 2
         };
+
+        if (isPi()) {
+          videoConfig.vcodec = 'h264_omx';
+        }
 
         const uuid = HOMEBRIDGE.UUIDGen.generate(cameraName);
         const artworkCameraAccessory = new HOMEBRIDGE.Accessory(cameraName, uuid, HOMEBRIDGE.hap.Accessory.Categories.CAMERA);
