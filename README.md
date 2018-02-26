@@ -36,6 +36,7 @@ See the [changelog](CHANGELOG.md) for changes between versions of this package.
   * [Feature Toggles](docs/configuration/features.md)
   * [Configuring Playlists](docs/configuration/playlists.md)
   * [Macros](docs/configuration/macros.md)
+  * [Artwork](docs/configuration/artwork.md)
 * Custom Services and Characteristics
   * [Media Skipping Service](docs/services/mediaskippingservice.md)
   * [Now Playing Service](docs/services/nowplayingservice.md)

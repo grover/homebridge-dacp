@@ -164,6 +164,10 @@ The following buttons can be listed in the `alternate-input-controls`:
 * left
 * right
 
+## Album Artwork
+
+Points to the temporary file path used to capture the artwork of the currently playing media file. See [Artwork Support](artwork.md) for more.
+
 ## Using multiple feature toggles
 
 You can use multiple feature toggles at the same time. The [features](../../examples/features) example shows a full configuration of the DACP plugin with multiple features ready for your use.
