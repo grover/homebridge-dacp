@@ -153,7 +153,7 @@ class NowPlayingService {
           fs.writeFile(this._artworkFile, response.body, (err) => {
             if (err) {
               this.log(`Failed to write artwork: ${util.inspect(err)}`);
-              this.log(`Will not write any artwork from now on.`);
+              this.log('Will not write any artwork from now on.');
               this._artworkFile = undefined;
             }
           });

@@ -1,6 +1,5 @@
 'use strict';
 
-var fs = require('fs');
 var ip = require('ip');
 var spawn = require('child_process').spawn;
 
@@ -90,16 +89,16 @@ class ArtworkCamera {
       audio: {
         codecs: [
           {
-            type: "OPUS", // Audio Codec
+            type: 'OPUS', // Audio Codec
             samplerate: 24 // 8, 16, 24 KHz
           },
           {
-            type: "AAC-eld",
+            type: 'AAC-eld',
             samplerate: 16
           }
         ]
       }
-    }
+    };
 
     this.createCameraControlService();
     this._createStreamControllers(numberOfStreams, streamOptions);
@@ -137,7 +136,7 @@ class ArtworkCamera {
     ffmpeg.stdout.on('data', function (data) {
       imageBuffer = Buffer.concat([imageBuffer, data]);
     });
-    ffmpeg.on('close', function (code) {
+    ffmpeg.on('close', function () {
       callback(undefined, imageBuffer);
     });
   }
@@ -145,18 +144,18 @@ class ArtworkCamera {
   prepareStream(request, callback) {
     var sessionInfo = {};
 
-    let sessionID = request["sessionID"];
-    let targetAddress = request["targetAddress"];
+    let sessionID = request['sessionID'];
+    let targetAddress = request['targetAddress'];
 
-    sessionInfo["address"] = targetAddress;
+    sessionInfo['address'] = targetAddress;
 
     var response = {};
 
-    let videoInfo = request["video"];
+    let videoInfo = request['video'];
     if (videoInfo) {
-      let targetPort = videoInfo["port"];
-      let srtp_key = videoInfo["srtp_key"];
-      let srtp_salt = videoInfo["srtp_salt"];
+      let targetPort = videoInfo['port'];
+      let srtp_key = videoInfo['srtp_key'];
+      let srtp_salt = videoInfo['srtp_salt'];
 
       let videoResp = {
         port: targetPort,
@@ -165,18 +164,18 @@ class ArtworkCamera {
         srtp_salt: srtp_salt
       };
 
-      response["video"] = videoResp;
+      response['video'] = videoResp;
 
-      sessionInfo["video_port"] = targetPort;
-      sessionInfo["video_srtp"] = Buffer.concat([srtp_key, srtp_salt]);
-      sessionInfo["video_ssrc"] = 1;
+      sessionInfo['video_port'] = targetPort;
+      sessionInfo['video_srtp'] = Buffer.concat([srtp_key, srtp_salt]);
+      sessionInfo['video_ssrc'] = 1;
     }
 
-    let audioInfo = request["audio"];
+    let audioInfo = request['audio'];
     if (audioInfo) {
-      let targetPort = audioInfo["port"];
-      let srtp_key = audioInfo["srtp_key"];
-      let srtp_salt = audioInfo["srtp_salt"];
+      let targetPort = audioInfo['port'];
+      let srtp_key = audioInfo['srtp_key'];
+      let srtp_salt = audioInfo['srtp_salt'];
 
       let audioResp = {
         port: targetPort,
@@ -185,11 +184,11 @@ class ArtworkCamera {
         srtp_salt: srtp_salt
       };
 
-      response["audio"] = audioResp;
+      response['audio'] = audioResp;
 
-      sessionInfo["audio_port"] = targetPort;
-      sessionInfo["audio_srtp"] = Buffer.concat([srtp_key, srtp_salt]);
-      sessionInfo["audio_ssrc"] = 1;
+      sessionInfo['audio_port'] = targetPort;
+      sessionInfo['audio_srtp'] = Buffer.concat([srtp_key, srtp_salt]);
+      sessionInfo['audio_ssrc'] = 1;
     }
 
     let currentAddress = ip.address();
@@ -198,12 +197,12 @@ class ArtworkCamera {
     };
 
     if (ip.isV4Format(currentAddress)) {
-      addressResp["type"] = "v4";
+      addressResp['type'] = 'v4';
     } else {
-      addressResp["type"] = "v6";
+      addressResp['type'] = 'v6';
     }
 
-    response["address"] = addressResp;
+    response['address'] = addressResp;
     this.pendingSessions[this.hap.uuid.unparse(sessionID)] = sessionInfo;
 
     callback(response);
@@ -215,7 +214,7 @@ class ArtworkCamera {
     if (sessionID) {
       let sessionIdentifier = this.hap.uuid.unparse(sessionID);
 
-      if (requestType == "start") {
+      if (requestType == 'start') {
         var sessionInfo = this.pendingSessions[sessionIdentifier];
         if (sessionInfo) {
           var width = 1280;
@@ -233,7 +232,7 @@ class ArtworkCamera {
               fps = expectedFPS;
             }
 
-            bitrate = videoInfo["max_bit_rate"];
+            bitrate = videoInfo['max_bit_rate'];
           }
 
           let targetAddress = sessionInfo.address;
@@ -250,7 +249,7 @@ class ArtworkCamera {
         }
 
         delete this.pendingSessions[sessionIdentifier];
-      } else if (requestType == "stop") {
+      } else if (requestType == 'stop') {
         var ffmpegProcess = this.ongoingSessions[sessionIdentifier];
         if (ffmpegProcess) {
           ffmpegProcess.kill('SIGKILL');
@@ -261,6 +260,6 @@ class ArtworkCamera {
       }
     }
   }
-};
+}
 
 module.exports = ArtworkCamera;

@@ -80,13 +80,13 @@ const DacpPlatform = class {
       if (typeof artwork === 'string') {
         const cameraName = `${device.name} Artwork`;
         const videoConfig = {
-          "binary": "ffmpeg",
-          "vcodec": "libx264",
-          "artworkImageSource": artwork,
-          "maxStreams": 2,
-          "maxWidth": 600,
-          "maxHeight": 600,
-          "maxFPS": 2
+          'binary': 'ffmpeg',
+          'vcodec': 'libx264',
+          'artworkImageSource': artwork,
+          'maxStreams': 2,
+          'maxWidth': 600,
+          'maxHeight': 600,
+          'maxFPS': 2
         };
 
         if (isPi()) {
