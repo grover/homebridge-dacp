@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 0.9 - 2018-02-28
+## Version 0.9 - 2018-02-26
 
 - Added input control mechanisms for Apple TV
 - Added macro execution mechanism for Apple TV
