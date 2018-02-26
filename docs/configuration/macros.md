@@ -22,23 +22,23 @@ Assuming you have a regular Apple TV configuration as shown in the [Apple TV exa
           "name": "AppleTV",
           "macros": {
             "Settings": [
-              'topmenu', 
-              'left', 
-              'left', 
-              'left', 
-              'left', 
-              'up', 
-              'up', 
-              'up', 
-              'up', 
-              'up', 
-              'up', 
-              'down', 
-              'down', 
-              'down', 
-              'down', 
-              'down',
-              'select'
+              "topmenu", 
+              "left", 
+              "left", 
+              "left", 
+              "left", 
+              "up", 
+              "up", 
+              "up", 
+              "up", 
+              "up", 
+              "up", 
+              "down", 
+              "down", 
+              "down", 
+              "down", 
+              "down",
+              "select"
             ]
           }
         }
