@@ -62,6 +62,10 @@ to address these in my spare time.
 
 If you fork this, go ahead - I'll accept pull requests for enhancements.
 
+## Contributors
+
+This work is based on the work of others, see [CONTRIBUTING](CONTRIBUTING.md) for the credits.
+
 ## License
 
 MIT License
