@@ -2,53 +2,7 @@
 
 let Characteristic, Service;
 
-const cmds = {
-  'topmenu': [
-    'topmenu'
-  ],
-  'menu': [
-    'menu'
-  ],
-  'select': [
-    'select'
-  ],
-  'up': [
-    'touchDown&time=0&point=20,275',
-    'touchMove&time=1&point=20,260',
-    'touchMove&time=2&point=20,245',
-    'touchMove&time=3&point=20,230',
-    'touchMove&time=4&point=20,215',
-    'touchMove&time=5&point=20,200',
-    'touchUp&time=6&point=20,185'
-  ],
-  'down': [
-    'touchDown&time=0&point=20,250',
-    'touchMove&time=1&point=20,255',
-    'touchMove&time=2&point=20,260',
-    'touchMove&time=3&point=20,265',
-    'touchMove&time=4&point=20,270',
-    'touchMove&time=5&point=20,275',
-    'touchUp&time=6&point=20,275'
-  ],
-  'left': [
-    'touchDown&time=0&point=75,100',
-    'touchMove&time=1&point=70,100',
-    'touchMove&time=3&point=65,100',
-    'touchMove&time=4&point=60,100',
-    'touchMove&time=5&point=55,100',
-    'touchMove&time=6&point=50,100',
-    'touchUp&time=7&point=50,100'
-  ],
-  'right': [
-    'touchDown&time=0&point=50,100',
-    'touchMove&time=1&point=55,100',
-    'touchMove&time=3&point=60,100',
-    'touchMove&time=4&point=65,100',
-    'touchMove&time=5&point=70,100',
-    'touchMove&time=6&point=75,100',
-    'touchUp&time=7&point=75,100'
-  ]
-};
+const MacroCommands = require('./MacroCommands');
 
 class InputControlService {
 
@@ -81,33 +35,35 @@ class InputControlService {
   }
 
   _createInputControlService() {
-    this._services = [
-      new Service.InputControlService(`${this.name} Remote`)
+    const svc = new Service.InputControlService(`${this.name} Remote`);
+
+    const buttons = [
+      { c: Characteristic.TopMenuButton, title: 'Topmenu', commands: MacroCommands.topmenu },
+      { c: Characteristic.MenuButton, title: 'Menu', commands: MacroCommands.menu },
+      { c: Characteristic.SelectButton, title: 'Select', commands: MacroCommands.select },
+      { c: Characteristic.UpButton, title: 'Up', commands: MacroCommands.up },
+      { c: Characteristic.DownButton, title: 'Down', commands: MacroCommands.down },
+      { c: Characteristic.LeftButton, title: 'Left', commands: MacroCommands.left },
+      { c: Characteristic.RightButton, title: 'Right', commands: MacroCommands.right }
     ];
 
-    this._characteristics = [
-      this._services[0].getCharacteristic(Characteristic.TopMenuButton).on('set', this._onKeyPress.bind(this, 'Topmenu', cmds.topmenu)),
-      this._services[0].getCharacteristic(Characteristic.MenuButton).on('set', this._onKeyPress.bind(this, 'Menu', cmds.menu)),
-      this._services[0].getCharacteristic(Characteristic.SelectButton).on('set', this._onKeyPress.bind(this, 'Select', cmds.select)),
-      this._services[0].getCharacteristic(Characteristic.UpButton).on('set', this._onKeyPress.bind(this, 'Up', cmds.up)),
-      this._services[0].getCharacteristic(Characteristic.DownButton).on('set', this._onKeyPress.bind(this, 'Down', cmds.down)),
-      this._services[0].getCharacteristic(Characteristic.LeftButton).on('set', this._onKeyPress.bind(this, 'Left', cmds.left)),
-      this._services[0].getCharacteristic(Characteristic.RightButton).on('set', this._onKeyPress.bind(this, 'Right', cmds.right)),
-    ];
+    buttons.forEach(entry => {
+      this._bindAssignmentHandler(svc, entry.c, entry.title, entry.commands);
+    });
+
+    this._services = [svc];
   }
 
   _createAlternateInputControls(alternateControls) {
     this._services = [
-      this._createKeyService(alternateControls, 'Topmenu', cmds.topmenu),
-      this._createKeyService(alternateControls, 'Menu', cmds.menu),
-      this._createKeyService(alternateControls, 'Select', cmds.select),
-      this._createKeyService(alternateControls, 'Up', cmds.up),
-      this._createKeyService(alternateControls, 'Down', cmds.down),
-      this._createKeyService(alternateControls, 'Left', cmds.left),
-      this._createKeyService(alternateControls, 'Right', cmds.right)
+      this._createKeyService(alternateControls, 'Topmenu', MacroCommands.topmenu),
+      this._createKeyService(alternateControls, 'Menu', MacroCommands.menu),
+      this._createKeyService(alternateControls, 'Select', MacroCommands.select),
+      this._createKeyService(alternateControls, 'Up', MacroCommands.up),
+      this._createKeyService(alternateControls, 'Down', MacroCommands.down),
+      this._createKeyService(alternateControls, 'Left', MacroCommands.left),
+      this._createKeyService(alternateControls, 'Right', MacroCommands.right)
     ].filter(s => s != undefined);
-
-    this._characteristics = this._services.map(svc => svc.getCharacteristic(Characteristic.On));
   }
 
   _createKeyService(features, title, commands) {
@@ -118,20 +74,25 @@ class InputControlService {
     }
 
     const svc = new Service.Switch(`${this.name} ${title}`, `input - ${title}`);
-    svc.getCharacteristic(Characteristic.On)
-      .on('set', this._onKeyPress.bind(this, title, commands));
+    this._bindAssignmentHandler(svc, Characteristic.On, title, commands);
 
     return svc;
   }
 
-  async _onKeyPress(title, commands, value, callback) {
+  _bindAssignmentHandler(svc, characteristic, title, commands) {
+    const c = svc.getCharacteristic(characteristic)
+      .on('set', this._onKeyPress.bind(this, title, commands, c));
+
+    return c;
+  }
+
+  async _onKeyPress(title, commands, characteristic, value, callback) {
     if (!value) {
       callback();
       return;
     }
 
     this.log(`Simulate '${title}' key press`);
-
     try {
       for (const cmd of commands) {
         await this._dacp.sendRemoteKey(cmd);
@@ -145,14 +106,12 @@ class InputControlService {
       callback();
     }
 
-    this._resetCharacteristics();
+    this._resetCharacteristics(characteristic);
   }
 
-  _resetCharacteristics() {
-    setTimeout(() => {
-      this._characteristics.forEach(c => c.updateValue(false));
-    }, 100);
+  _resetCharacteristics(characteristic) {
+    setTimeout(() => characteristic.updateValue(false), 100);
   }
-};
+}
 
 module.exports = InputControlService;

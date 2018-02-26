@@ -11,6 +11,7 @@ const PlayerControlsService = require('./PlayerControlsService');
 const SpeakerService = require('./SpeakerService');
 const PlaylistService = require('./PlaylistService');
 const InputControlService = require('./InputControlService');
+const MacrosService = require('./MacrosService');
 
 let Characteristic, Service;
 
@@ -57,7 +58,8 @@ class DacpAccessory {
       this.getNowPlayingService(homebridge),
       this.getMediaSkippingService(homebridge),
       this.getPlaylistService(homebridge),
-      ...this.getInputControlService(homebridge)
+      ...this.getInputControlService(homebridge),
+      ...this.getMacrosService(homebridge)
     ].filter(m => m != null);
   }
 
@@ -131,12 +133,23 @@ class DacpAccessory {
   }
 
   getInputControlService(homebridge) {
-    if (this.config.features && !this.config.features['input-controls'] && !this.config.features['alternate-input-controls']) {
+    if (this.config.features === undefined
+      || this.config.features.hasOwnProperty('input-controls') === false
+      || this.config.features.hasOwnProperty('alternate-input-controls') === false) {
       return [];
     }
 
     this._inputControlService = new InputControlService(homebridge, this.log, this.name, this._dacpClient, this.config.features);
     return this._inputControlService.getService();
+  }
+
+  getMacrosService(homebridge) {
+    if (this.config.macros === undefined) {
+      return [];
+    }
+
+    this._macroService = new MacrosService(homebridge, this.log, this.name, this._dacpClient, this.config.macros);
+    return this._macroService.getService();
   }
 
   identify(callback) {

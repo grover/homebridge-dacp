@@ -3,6 +3,7 @@
 ## Version 0.9 - 2018-02-28
 
 - Added input control mechanisms for Apple TV
+- Added macro execution mechanism for Apple TV
 - Added album artwork support
 
 ## Version 0.8 - 2018-02-22

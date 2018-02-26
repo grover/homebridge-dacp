@@ -16,4 +16,3 @@ the following fields:
 | RightButton | `A3DECC2A-4852-4347-A548-9972E0490891` | Boolean | Read, Write, Notify | Simulates a press of the Right button on an AppleTV remote. |
 
 Source code: [InputControlTypes.js](src/hap/InputControlTypes.js)
-
