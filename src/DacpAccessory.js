@@ -138,9 +138,8 @@ class DacpAccessory {
   }
 
   getInputControlService(homebridge) {
-    if (this.config.features === undefined
-      || this.config.features.hasOwnProperty('input-controls') === false
-      || this.config.features.hasOwnProperty('alternate-input-controls') === false) {
+    if (this.config.features === undefined ||
+      (this.config.features.hasOwnProperty('input-controls') === false && this.config.features.hasOwnProperty('alternate-input-controls') === false)) {
       return [];
     }
 

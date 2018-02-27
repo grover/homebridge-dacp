@@ -145,7 +145,7 @@ to only provide the Menu and TopMenu buttons:
         {
           "name": "Alternate-Input-Controls Example",
           "features": {
-            "alternate-input-controls": ['menu', 'topmenu']
+            "alternate-input-controls": ["menu", "topmenu"]
           }
         }
       ]

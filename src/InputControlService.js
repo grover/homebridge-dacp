@@ -80,9 +80,8 @@ class InputControlService {
   }
 
   _bindAssignmentHandler(svc, characteristic, title, commands) {
-    const c = svc.getCharacteristic(characteristic)
-      .on('set', this._onKeyPress.bind(this, title, commands, c));
-
+    const c = svc.getCharacteristic(characteristic);
+    c.on('set', this._onKeyPress.bind(this, title, commands, c));
     return c;
   }
 
