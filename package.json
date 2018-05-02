@@ -1,6 +1,6 @@
 {
   "name": "homebridge-dacp",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "A homebridge plugin to control iTunes, AirPlay speakers and Apple TV devices",
   "main": "src/index.js",
   "scripts": {
