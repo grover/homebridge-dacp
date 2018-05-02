@@ -76,6 +76,11 @@ const DacpPlatform = class {
     const configuredAccessories = [];
 
     this.config.devices.forEach(device => {
+
+      if (!device || !device.features) {
+        return;
+      }
+
       const artwork = device.features['album-artwork'];
       if (typeof artwork === 'string') {
         const cameraName = `${device.name} Artwork`;
@@ -169,6 +174,10 @@ const DacpPlatform = class {
     this._accessories = devices.map(device => {
 
       this.log(`Found accessory in config: "${device.name}"`);
+
+      if (device.features === undefined) {
+        device.features = {};
+      }
 
       if (!device.pairing || !device.serviceName) {
         const passcode = this._randomBaseString(4, 10);

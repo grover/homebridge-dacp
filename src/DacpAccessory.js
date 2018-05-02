@@ -27,9 +27,6 @@ class DacpAccessory {
     this.serviceName = config.serviceName;
 
     this.config = config;
-    if (this.config.features === undefined) {
-      this.config.features = {};
-    }
 
     this._isAnnounced = false;
     this._isReachable = false;
