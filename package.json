@@ -19,8 +19,8 @@
     "detect-rpi": "^1.2.0",
     "mdns": "^2.3.4",
     "mdns-resolver": "0.0.1",
-    "moment": "^2.19.3",
-    "request": "^2.83.0",
+    "moment": "^2.22.1",
+    "request": "^2.85.0",
     "sequential-task-queue": "^1.2.0"
   },
   "keywords": [
@@ -38,7 +38,7 @@
     "homebridge": ">=0.4.36"
   },
   "devDependencies": {
-    "eslint": "^4.18.0",
+    "eslint": "^4.19.1",
     "npm-github-release": "^0.9.0"
   }
 }
