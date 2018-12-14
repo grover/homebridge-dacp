@@ -117,7 +117,7 @@ class DacpConnection extends EventEmitter {
       if (body) {
         options.body = daap.encode(body);
       }
-TVRemote
+
       request(options, (error, response) => {
         // this.log(`Done ${JSON.stringify(options)}`);
         if (error || (response && response.statusCode >= 300)) {
