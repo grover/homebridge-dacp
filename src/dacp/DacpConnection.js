@@ -109,7 +109,7 @@ class DacpConnection extends EventEmitter {
           'Client-DAAP-Version': '3.12',
           'Client-ATV-Sharing-Version': '1.2',
           'Client-iTunes-Sharing-Version': '3.10',
-          'User-Agent': 'TVRemote/186 CFNetwork/808.1.4 Darwin/16.1.0'
+          'User-Agent': 'Remote/1021'
         },
         agent: this._agent
       };
