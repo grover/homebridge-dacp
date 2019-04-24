@@ -872,7 +872,7 @@ function _decodeList(buffer, start, end) {
         } else if (type.type === 'int') {
           value = buffer.readUInt32BE(index + 8);
         } else if (type.type === 'long') {
-          value = buffer.readIntBE(index + 8, 8);
+          value = buffer.readUInt32BE(index + 8);
         } else if (type.type === 'list') {
           value = _decodeList(buffer, index + 8, index + 8 + length);
         } else if (type.type === 'struct') {
@@ -924,7 +924,7 @@ function _decode(buffer, start, end) {
         } else if (type.type === 'int') {
           value = buffer.readUInt32BE(index + 8);
         } else if (type.type === 'long') {
-          value = buffer.readIntBE(index + 8, 8);
+          value = buffer.readUInt32BE(index + 8);
         } else if (type.type === 'ulong') {
           value = buffer.readUIntBE(index + 8, 8);
         } else if (type.type === 'list') {
